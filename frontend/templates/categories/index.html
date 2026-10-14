@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Jenis & Kategori Pengaduan - SI Pengaduan{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item-text">Jenis Pengaduan</span>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="page-title d-flex align-items-center gap-2">
+            <i class="bi bi-tags-fill" style="color:var(--accent-blue);"></i>
+            Jenis & Kategori Pengaduan
+        </h1>
+        <p class="page-subtitle text-muted mb-0">
+            Klasifikasi resmi pengaduan mahasiswa Program Studi Teknik Informatika Universitas Pahlawan Tuanku Tambusai
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('complaint.create_complaint') }}" class="btn-primary-custom">
+            <i class="bi bi-plus-circle-fill"></i>
+            Buat Pengaduan Baru
+        </a>
+    </div>
+</div>
+
+<!-- Hero Banner / Information Box -->
+<div class="card-glass mb-4 p-4" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%); border-left: 4px solid var(--accent-blue);">
+    <div class="d-flex align-items-start gap-3">
+        <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <i class="bi bi-info-circle-fill" style="color: var(--accent-blue); font-size: 1.25rem;"></i>
+        </div>
+        <div>
+            <h5 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+                Panduan Memilih Jenis Pengaduan
+            </h5>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0; line-height: 1.6;">
+                Sistem <strong>SI PENGADU</strong> mengelompokkan laporan ke dalam <strong>6 kategori utama</strong>. Memilih jenis kategori yang tepat memastikan laporan Anda langsung diteruskan dan ditangani oleh pihak berwenang (Kaprodi, Bagian Akademik, Teknisi Lab, atau Tata Usaha) secara cepat, transparan, dan terarah.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Grid 6 Kategori Pengaduan -->
+<div class="row g-4 mb-4">
+    {% for cat in categories %}
+    <div class="col-lg-6 col-xl-4">
+        <div class="card-glass h-100 d-flex flex-column" style="border-top: 3px solid {{ cat.color }}; transition: all 0.3s ease;">
+            <!-- Category Header -->
+            <div class="d-flex align-items-start justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 46px; height: 46px; border-radius: var(--radius-md); background: {{ cat.bg_light }}; border: 1px solid {{ cat.border_color }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="bi {{ cat.icon }}" style="color: {{ cat.color }}; font-size: 1.35rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; color: var(--text-primary);">
+                            {{ cat.name }}
+                        </h3>
+                        <span style="font-size: 0.72rem; color: {{ cat.color }}; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Kategori #{{ loop.index }}
+                        </span>
+                    </div>
+                </div>
+                <span class="badge" style="background: rgba(255, 255, 255, 0.06); color: var(--text-secondary); border: 1px solid var(--border-color); font-size: 0.72rem; padding: 4px 8px;">
+                    {{ cat.count }} Laporan
+                </span>
+            </div>
+
+            <!-- Description -->
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 16px;">
+                {{ cat.desc }}
+            </p>
+
+            <!-- Ruang Lingkup -->
+            <div class="mb-3 p-3" style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: var(--radius-sm); flex-grow: 1;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: {{ cat.color }}; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                    <i class="bi bi-check2-circle me-1"></i> Ruang Lingkup Masalah:
+                </div>
+                <ul style="list-style: none; padding-left: 0; margin-bottom: 0;">
+                    {% for scope in cat.scopes %}
+                    <li style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; display: flex; align-items: flex-start; gap: 8px; line-height: 1.4;">
+                        <i class="bi bi-dot" style="color: {{ cat.color }}; font-size: 1.1rem; line-height: 0.8;"></i>
+                        <span>{{ scope }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Contoh Kasus -->
+            <div class="mb-4 p-2 px-3" style="background: {{ cat.bg_light }}; border-left: 3px solid {{ cat.color }}; border-radius: 4px;">
+                <div style="font-size: 0.7rem; font-weight: 700; color: {{ cat.color }}; margin-bottom: 2px;">
+                    <i class="bi bi-chat-quote-fill me-1"></i> Contoh Laporan:
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-primary); font-style: italic; line-height: 1.4;">
+                    "{{ cat.example }}"
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 mt-auto pt-2 border-top" style="border-color: var(--border-color) !important;">
+                <a href="{{ url_for('complaint.create_complaint') }}?category={{ cat.key }}"
+                   class="btn btn-sm w-100 d-flex align-items-center justify-content-center gap-1"
+                   style="background: {{ cat.color }}; color: #ffffff; font-weight: 600; font-size: 0.8rem; padding: 8px 12px; border-radius: var(--radius-sm); border: none;">
+                    <i class="bi bi-pencil-square"></i>
+                    Lapor Kategori Ini
+                </a>
+                <a href="{{ url_for('complaint.list_complaints') }}?category={{ cat.key }}"
+                   class="btn btn-sm d-flex align-items-center justify-content-center gap-1"
+                   style="background: var(--glass-bg); color: var(--text-secondary); border: 1px solid var(--border-color); font-size: 0.8rem; padding: 8px 12px; border-radius: var(--radius-sm); white-space: nowrap;">
+                    <i class="bi bi-search"></i>
+                    Daftar
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Alur & Prosedur Pengaduan -->
+<div class="card-glass p-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center;">
+            <i class="bi bi-shield-check" style="color: var(--accent-green); font-size: 1.15rem;"></i>
+        </div>
+        <h4 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-primary);">
+            Tahapan Penanganan Laporan Pengaduan
+        </h4>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="p-3 h-100" style="background: var(--glass-bg); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div class="badge bg-warning text-dark mb-2">1. Menunggu</div>
+                <h6 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Penerimaan Laporan</h6>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Laporan masuk ke sistem secara otomatis dan menunggu verifikasi petugas prodi.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 h-100" style="background: var(--glass-bg); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div class="badge bg-info text-dark mb-2">2. Diproses</div>
+                <h6 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Pemeriksaan Masalah</h6>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Petugas prodi memeriksa detail masalah, bukti lampiran, dan berkoordinasi dengan bagian terkait.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 h-100" style="background: var(--glass-bg); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div class="badge bg-primary mb-2">3. Ditindaklanjuti</div>
+                <h6 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Aksi & Solusi</h6>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Langkah penanganan langsung dilakukan ke laboratorium, dosen, atau bagian administrasi.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 h-100" style="background: var(--glass-bg); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div class="badge bg-success mb-2">4. Selesai</div>
+                <h6 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Tanggapan Resmi</h6>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Laporan dinyatakan tuntas dan mahasiswa mendapatkan balasan resmi di detail pengaduan.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,810 @@
+{% extends 'base.html' %}
+{% block title %}Pengaturan Web - Si ASPIRA{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item-text">Pengaturan</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Settings Container ── */
+    .settings-container {
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    .settings-hero {
+        background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.08));
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-xl);
+        padding: 24px 28px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .settings-hero-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .settings-hero-desc {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin: 0;
+        max-width: 600px;
+    }
+
+    .settings-card {
+        background: var(--navy-800);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+
+    .settings-card-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .settings-card-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .settings-card-icon.theme-icon {
+        background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.15));
+        color: #f59e0b;
+    }
+
+    .settings-card-icon.audio-icon {
+        background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.15));
+        color: var(--accent-blue-light);
+    }
+
+    .settings-card-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .settings-card-subtitle {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin: 2px 0 0 0;
+    }
+
+    /* ── Theme Options Grid ── */
+    .theme-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+    }
+
+    .theme-option-card {
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        background: var(--glass-bg);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .theme-option-card:hover {
+        border-color: var(--accent-blue);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .theme-option-card.active {
+        border-color: var(--accent-blue);
+        background: rgba(59,130,246,0.08);
+        box-shadow: 0 0 20px rgba(59,130,246,0.2);
+    }
+
+    .theme-preview-box {
+        height: 100px;
+        border-radius: var(--radius-sm);
+        margin-bottom: 14px;
+        padding: 10px;
+        display: flex;
+        gap: 8px;
+        border: 1px solid rgba(255,255,255,0.08);
+        position: relative;
+    }
+
+    /* Dark Preview Mock */
+    .theme-preview-dark {
+        background: #080e1f;
+    }
+    .theme-preview-dark .preview-sidebar {
+        width: 32px;
+        background: #0c1428;
+        border-radius: 4px;
+    }
+    .theme-preview-dark .preview-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .theme-preview-dark .preview-bar-blue {
+        height: 12px;
+        width: 60%;
+        background: #3b82f6;
+        border-radius: 3px;
+    }
+    .theme-preview-dark .preview-bar-gray {
+        height: 8px;
+        width: 80%;
+        background: rgba(255,255,255,0.15);
+        border-radius: 3px;
+    }
+    .theme-preview-dark .preview-card-mock {
+        height: 38px;
+        background: #101b36;
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* Light Preview Mock */
+    .theme-preview-light {
+        background: #f1f5f9;
+        border-color: rgba(0,0,0,0.1);
+    }
+    .theme-preview-light .preview-sidebar {
+        width: 32px;
+        background: #ffffff;
+        border-radius: 4px;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+    .theme-preview-light .preview-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .theme-preview-light .preview-bar-blue {
+        height: 12px;
+        width: 60%;
+        background: #2563eb;
+        border-radius: 3px;
+    }
+    .theme-preview-light .preview-bar-gray {
+        height: 8px;
+        width: 80%;
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+    .theme-preview-light .preview-card-mock {
+        height: 38px;
+        background: #ffffff;
+        border-radius: 4px;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .theme-info-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+
+    .theme-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .theme-desc {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .badge-theme-active {
+        background: rgba(16,185,129,0.18);
+        color: var(--accent-green);
+        border: 1px solid rgba(16,185,129,0.3);
+        font-size: 0.68rem;
+        padding: 2px 8px;
+        border-radius: 99px;
+        font-weight: 600;
+    }
+
+    /* ── Switcher & Sliders ── */
+    .custom-switch-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 18px;
+        background: var(--glass-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        margin-bottom: 20px;
+    }
+
+    .form-check-input {
+        width: 2.75em !important;
+        height: 1.4em !important;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--accent-blue) !important;
+        border-color: var(--accent-blue) !important;
+    }
+
+    /* ── Sound Options Grid ── */
+    .sound-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .sound-card {
+        background: var(--glass-bg);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .sound-card:hover {
+        border-color: var(--accent-blue);
+        transform: translateY(-2px);
+    }
+
+    .sound-card.active {
+        border-color: var(--accent-blue);
+        background: rgba(59,130,246,0.08);
+    }
+
+    .sound-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .sound-icon-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(59,130,246,0.15);
+        color: var(--accent-blue-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .btn-sound-play {
+        background: var(--navy-700);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 5px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-top: 8px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-sound-play:hover {
+        background: var(--accent-blue);
+        border-color: var(--accent-blue);
+        color: #ffffff;
+    }
+
+    .btn-sound-play.playing {
+        background: var(--accent-green);
+        border-color: var(--accent-green);
+        color: #ffffff;
+        animation: pulseBtn 1s infinite;
+    }
+
+    @keyframes pulseBtn {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.75; }
+    }
+
+    /* ── Volume Slider Area ── */
+    .volume-box {
+        background: var(--glass-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .volume-slider {
+        flex: 1;
+        accent-color: var(--accent-blue);
+        cursor: pointer;
+    }
+
+    .volume-badge {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--accent-blue-light);
+        min-width: 44px;
+        text-align: right;
+    }
+
+    /* ── Action Buttons ── */
+    .settings-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .save-toast {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--accent-green);
+        font-size: 0.85rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: all 0.3s ease;
+    }
+
+    .save-toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container animate-on-scroll">
+
+    <!-- Top Banner -->
+    <div class="settings-hero">
+        <div>
+            <h1 class="settings-hero-title">
+                <i class="bi bi-gear-wide-connected" style="color:var(--accent-blue-light);"></i>
+                Pengaturan Web
+            </h1>
+            <p class="settings-hero-desc">
+                Kustomisasi tampilan tema website dan preferensi suara nada notifikasi untuk kenyamanan Anda dalam menggunakan portal Si ASPIRA.
+            </p>
+        </div>
+        <div class="d-none d-md-block">
+            <span class="badge-new" style="font-size:0.75rem;padding:6px 14px;">
+                <i class="bi bi-check2-circle me-1"></i> Tersimpan Otomatis
+            </span>
+        </div>
+    </div>
+
+    <!-- 1. TEMA WEB (GELAP / TERANG) -->
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <div class="settings-card-icon theme-icon">
+                <i class="bi bi-palette-fill"></i>
+            </div>
+            <div>
+                <h2 class="settings-card-title">Tema Tampilan Antarmuka</h2>
+                <p class="settings-card-subtitle">Pilih gaya visual mode gelap atau mode terang sesuai kenyamanan mata Anda</p>
+            </div>
+        </div>
+
+        <div class="theme-grid">
+            <!-- Dark Theme Option -->
+            <div class="theme-option-card" id="themeCardDark" onclick="applyAndSaveTheme('dark')">
+                <div class="theme-preview-box theme-preview-dark">
+                    <div class="preview-sidebar"></div>
+                    <div class="preview-content">
+                        <div class="preview-bar-blue"></div>
+                        <div class="preview-bar-gray"></div>
+                        <div class="preview-card-mock"></div>
+                    </div>
+                </div>
+                <div class="theme-info-header">
+                    <div class="theme-title">
+                        <i class="bi bi-moon-stars-fill" style="color:#60a5fa;"></i> Mode Gelap
+                    </div>
+                    <span class="badge-theme-active" id="badgeDark" style="display:none;">Aktif</span>
+                </div>
+                <p class="theme-desc">Nuansa biru malam (Navy Dark). Nyaman untuk mata dan menghemat konsumsi baterai.</p>
+            </div>
+
+            <!-- Light Theme Option -->
+            <div class="theme-option-card" id="themeCardLight" onclick="applyAndSaveTheme('light')">
+                <div class="theme-preview-box theme-preview-light">
+                    <div class="preview-sidebar"></div>
+                    <div class="preview-content">
+                        <div class="preview-bar-blue"></div>
+                        <div class="preview-bar-gray"></div>
+                        <div class="preview-card-mock"></div>
+                    </div>
+                </div>
+                <div class="theme-info-header">
+                    <div class="theme-title">
+                        <i class="bi bi-sun-fill" style="color:#f59e0b;"></i> Mode Terang
+                    </div>
+                    <span class="badge-theme-active" id="badgeLight" style="display:none;">Aktif</span>
+                </div>
+                <p class="theme-desc">Tampilan cerah, bersih, dan kontras tajam. Cocok untuk penggunaan di ruangan berlampu terang.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. NADA NOTIFIKASI -->
+    <div class="settings-card">
+        <div class="settings-card-header">
+            <div class="settings-card-icon audio-icon">
+                <i class="bi bi-bell-fill"></i>
+            </div>
+            <div>
+                <h2 class="settings-card-title">Nada & Suara Notifikasi</h2>
+                <p class="settings-card-subtitle">Atur suara lonceng alert saat admin memberikan tanggapan atau status pengaduan diperbarui</p>
+            </div>
+        </div>
+
+        <!-- Master Switch -->
+        <div class="custom-switch-wrapper">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:38px;height:38px;border-radius:10px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;color:var(--accent-blue-light);">
+                    <i class="bi bi-volume-up-fill" id="volumeIcon"></i>
+                </div>
+                <div>
+                    <div style="font-weight:600;font-size:0.95rem;color:var(--text-primary);">Suara Notifikasi Sistem</div>
+                    <div style="font-size:0.78rem;color:var(--text-muted);">Putar efek suara saat ada notifikasi baru dari petugas</div>
+                </div>
+            </div>
+            <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" id="soundSwitch" onchange="toggleSoundMaster(this.checked)" checked>
+            </div>
+        </div>
+
+        <!-- Volume Slider -->
+        <div class="volume-box" id="volumeControlArea">
+            <i class="bi bi-volume-down" style="color:var(--text-muted);font-size:1.2rem;"></i>
+            <input type="range" class="volume-slider" id="volumeRange" min="0" max="100" value="80" oninput="changeSoundVolume(this.value)">
+            <i class="bi bi-volume-up" style="color:var(--text-primary);font-size:1.2rem;"></i>
+            <span class="volume-badge" id="volumeLabel">80%</span>
+        </div>
+
+        <!-- Sound Choices -->
+        <div style="font-weight:600;font-size:0.875rem;margin-bottom:12px;color:var(--text-primary);">
+            <i class="bi bi-music-note-beamed me-1 text-primary"></i> Pilih Jenis Nada Dering:
+        </div>
+
+        <div class="sound-grid" id="soundGridContainer">
+            <!-- 1. Chime -->
+            <div class="sound-card" id="soundCard_chime" onclick="selectSoundOption('chime')">
+                <div>
+                    <div class="sound-card-top">
+                        <div class="sound-icon-circle"><i class="bi bi-bell"></i></div>
+                        <input type="radio" name="soundTypeRadio" id="radio_chime" value="chime" checked>
+                    </div>
+                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Chime Klasik</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Nada lonceng ramah khas portal pengaduan (Standar)</div>
+                </div>
+                <button type="button" class="btn-sound-play" onclick="event.stopPropagation(); playSoundDemo('chime');">
+                    <i class="bi bi-play-fill"></i> Putar Nada
+                </button>
+            </div>
+
+            <!-- 2. Bell -->
+            <div class="sound-card" id="soundCard_bell" onclick="selectSoundOption('bell')">
+                <div>
+                    <div class="sound-card-top">
+                        <div class="sound-icon-circle"><i class="bi bi-broadcast-pin"></i></div>
+                        <input type="radio" name="soundTypeRadio" id="radio_bell" value="bell">
+                    </div>
+                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Lonceng Modern</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Denting bel jernih dan berdering elegan</div>
+                </div>
+                <button type="button" class="btn-sound-play" onclick="event.stopPropagation(); playSoundDemo('bell');">
+                    <i class="bi bi-play-fill"></i> Putar Nada
+                </button>
+            </div>
+
+            <!-- 3. Pop -->
+            <div class="sound-card" id="soundCard_pop" onclick="selectSoundOption('pop')">
+                <div>
+                    <div class="sound-card-top">
+                        <div class="sound-icon-circle"><i class="bi bi-chat-heart"></i></div>
+                        <input type="radio" name="soundTypeRadio" id="radio_pop" value="pop">
+                    </div>
+                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Ting Ceria (Pop)</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Suara notifikasi singkat, ceria, dan tidak bising</div>
+                </div>
+                <button type="button" class="btn-sound-play" onclick="event.stopPropagation(); playSoundDemo('pop');">
+                    <i class="bi bi-play-fill"></i> Putar Nada
+                </button>
+            </div>
+
+            <!-- 4. Gentle -->
+            <div class="sound-card" id="soundCard_gentle" onclick="selectSoundOption('gentle')">
+                <div>
+                    <div class="sound-card-top">
+                        <div class="sound-icon-circle"><i class="bi bi-soundwave"></i></div>
+                        <input type="radio" name="soundTypeRadio" id="radio_gentle" value="gentle">
+                    </div>
+                    <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Melodi Lembut</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">Nada akustik halus yang menenangkan</div>
+                </div>
+                <button type="button" class="btn-sound-play" onclick="event.stopPropagation(); playSoundDemo('gentle');">
+                    <i class="bi bi-play-fill"></i> Putar Nada
+                </button>
+            </div>
+        </div>
+
+        <!-- Event Triggers Checkbox -->
+        <div style="background:var(--glass-bg);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:14px 18px;margin-top:16px;">
+            <div style="font-weight:600;font-size:0.85rem;margin-bottom:10px;color:var(--text-primary);">
+                Pemicu Suara Notifikasi:
+            </div>
+            <div class="d-flex flex-column gap-2">
+                <label style="display:flex;align-items:center;gap:10px;font-size:0.825rem;color:var(--text-secondary);cursor:pointer;">
+                    <input type="checkbox" id="triggerResponse" checked style="accent-color:var(--accent-blue);width:16px;height:16px;">
+                    Bunyikan nada saat admin/petugas memberikan tanggapan baru
+                </label>
+                <label style="display:flex;align-items:center;gap:10px;font-size:0.825rem;color:var(--text-secondary);cursor:pointer;">
+                    <input type="checkbox" id="triggerStatus" checked style="accent-color:var(--accent-blue);width:16px;height:16px;">
+                    Bunyikan nada saat status laporan berubah (Diproses / Selesai / Ditolak)
+                </label>
+            </div>
+        </div>
+
+        <!-- Save Button and Feedback -->
+        <div class="settings-actions">
+            <span class="save-toast" id="saveToast">
+                <i class="bi bi-check-circle-fill"></i> Pengaturan web berhasil disimpan!
+            </span>
+            <button type="button" class="btn-primary-custom" onclick="saveAllPreferences()">
+                <i class="bi bi-floppy-fill me-1"></i> Simpan Pengaturan
+            </button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ── Sounds URL Mapping ──
+    const SOUND_MAP = {
+        'chime': "{{ url_for('static', filename='audio/chime.mp3') }}",
+        'bell': "{{ url_for('static', filename='audio/bell.mp3') }}",
+        'pop': "{{ url_for('static', filename='audio/pop.mp3') }}",
+        'gentle': "{{ url_for('static', filename='audio/gentle.mp3') }}"
+    };
+
+    let activeAudio = null;
+
+    // ── Theme Functions ──
+    function applyAndSaveTheme(theme) {
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.classList.add('light-theme');
+            document.documentElement.classList.remove('dark');
+            if (document.body) {
+                document.body.classList.add('light-theme');
+                document.body.classList.remove('dark');
+            }
+            localStorage.setItem('user_theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-theme');
+            if (document.body) {
+                document.body.classList.add('dark');
+                document.body.classList.remove('light-theme');
+            }
+            localStorage.setItem('user_theme', 'dark');
+        }
+        updateThemeUI(theme);
+        flashSaveToast();
+    }
+
+    function updateThemeUI(theme) {
+        const cardDark = document.getElementById('themeCardDark');
+        const cardLight = document.getElementById('themeCardLight');
+        const badgeDark = document.getElementById('badgeDark');
+        const badgeLight = document.getElementById('badgeLight');
+
+        if (theme === 'light') {
+            cardLight?.classList.add('active');
+            cardDark?.classList.remove('active');
+            if (badgeLight) badgeLight.style.display = 'inline-block';
+            if (badgeDark) badgeDark.style.display = 'none';
+        } else {
+            cardDark?.classList.add('active');
+            cardLight?.classList.remove('active');
+            if (badgeDark) badgeDark.style.display = 'inline-block';
+            if (badgeLight) badgeLight.style.display = 'none';
+        }
+    }
+
+    // ── Sound Functions ──
+    function toggleSoundMaster(enabled) {
+        localStorage.setItem('user_notif_sound_enabled', enabled ? 'true' : 'false');
+        const volumeBox = document.getElementById('volumeControlArea');
+        const soundGrid = document.getElementById('soundGridContainer');
+        const icon = document.getElementById('volumeIcon');
+
+        if (enabled) {
+            if (volumeBox) volumeBox.style.opacity = '1';
+            if (soundGrid) soundGrid.style.opacity = '1';
+            if (icon) icon.className = 'bi bi-volume-up-fill';
+        } else {
+            if (volumeBox) volumeBox.style.opacity = '0.4';
+            if (soundGrid) soundGrid.style.opacity = '0.4';
+            if (icon) icon.className = 'bi bi-volume-mute-fill';
+            if (activeAudio) { activeAudio.pause(); }
+        }
+        flashSaveToast();
+    }
+
+    function changeSoundVolume(val) {
+        document.getElementById('volumeLabel').textContent = val + '%';
+        localStorage.setItem('user_notif_volume', val);
+        if (activeAudio) {
+            activeAudio.volume = val / 100;
+        }
+    }
+
+    function selectSoundOption(soundKey) {
+        localStorage.setItem('user_notif_sound', soundKey);
+        // Update radio & cards
+        document.querySelectorAll('.sound-card').forEach(card => card.classList.remove('active'));
+        const selectedCard = document.getElementById('soundCard_' + soundKey);
+        if (selectedCard) selectedCard.classList.add('active');
+
+        const radio = document.getElementById('radio_' + soundKey);
+        if (radio) radio.checked = true;
+
+        playSoundDemo(soundKey);
+        flashSaveToast();
+    }
+
+    function playSoundDemo(soundKey) {
+        const isEnabled = localStorage.getItem('user_notif_sound_enabled') !== 'false';
+        if (!isEnabled) {
+            alert('Suara notifikasi saat ini sedang dinonaktifkan. Aktifkan sakelar di atas untuk mendengarkan.');
+            return;
+        }
+
+        const url = SOUND_MAP[soundKey] || SOUND_MAP['chime'];
+        const vol = parseInt(localStorage.getItem('user_notif_volume') || '80', 10) / 100;
+
+        if (activeAudio) {
+            activeAudio.pause();
+            activeAudio.currentTime = 0;
+        }
+
+        // Visual button indicator
+        const targetBtn = document.querySelector(`#soundCard_${soundKey} .btn-sound-play`);
+        if (targetBtn) {
+            document.querySelectorAll('.btn-sound-play').forEach(b => {
+                b.classList.remove('playing');
+                b.innerHTML = '<i class="bi bi-play-fill"></i> Putar Nada';
+            });
+            targetBtn.classList.add('playing');
+            targetBtn.innerHTML = '<i class="bi bi-stop-fill"></i> Memutar...';
+        }
+
+        activeAudio = new Audio(url);
+        activeAudio.volume = vol;
+        activeAudio.play().then(() => {
+            activeAudio.onended = () => {
+                if (targetBtn) {
+                    targetBtn.classList.remove('playing');
+                    targetBtn.innerHTML = '<i class="bi bi-play-fill"></i> Putar Nada';
+                }
+            };
+        }).catch(err => {
+            console.log('Audio playback prevented or unsupported:', err);
+            if (targetBtn) {
+                targetBtn.classList.remove('playing');
+                targetBtn.innerHTML = '<i class="bi bi-play-fill"></i> Putar Nada';
+            }
+        });
+    }
+
+    function flashSaveToast() {
+        const toast = document.getElementById('saveToast');
+        if (!toast) return;
+        toast.classList.add('show');
+        clearTimeout(window.__saveToastTimer);
+        window.__saveToastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2500);
+    }
+
+    function saveAllPreferences() {
+        // Triggers
+        const trigResp = document.getElementById('triggerResponse').checked;
+        const trigStatus = document.getElementById('triggerStatus').checked;
+        localStorage.setItem('user_trigger_response', trigResp);
+        localStorage.setItem('user_trigger_status', trigStatus);
+
+        flashSaveToast();
+    }
+
+    // ── Init on page load ──
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Theme
+        const curTheme = localStorage.getItem('user_theme') || 'dark';
+        updateThemeUI(curTheme);
+
+        // 2. Sound Switch
+        const soundEnabled = localStorage.getItem('user_notif_sound_enabled') !== 'false';
+        const soundSwitch = document.getElementById('soundSwitch');
+        if (soundSwitch) {
+            soundSwitch.checked = soundEnabled;
+            toggleSoundMaster(soundEnabled);
+        }
+
+        // 3. Volume
+        const vol = localStorage.getItem('user_notif_volume') || '80';
+        const volRange = document.getElementById('volumeRange');
+        const volLabel = document.getElementById('volumeLabel');
+        if (volRange) volRange.value = vol;
+        if (volLabel) volLabel.textContent = vol + '%';
+
+        // 4. Sound Choice
+        const curSound = localStorage.getItem('user_notif_sound') || 'chime';
+        document.querySelectorAll('.sound-card').forEach(card => card.classList.remove('active'));
+        const activeCard = document.getElementById('soundCard_' + curSound);
+        if (activeCard) activeCard.classList.add('active');
+        const radio = document.getElementById('radio_' + curSound);
+        if (radio) radio.checked = true;
+
+        // 5. Triggers
+        const trigResp = localStorage.getItem('user_trigger_response') !== 'false';
+        const trigStatus = localStorage.getItem('user_trigger_status') !== 'false';
+        if (document.getElementById('triggerResponse')) document.getElementById('triggerResponse').checked = trigResp;
+        if (document.getElementById('triggerStatus')) document.getElementById('triggerStatus').checked = trigStatus;
+    });
+</script>
+{% endblock %}

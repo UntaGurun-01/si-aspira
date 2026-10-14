@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+{% block title %}Manajemen Pengguna{% endblock %}
+{% block page_title %}Manajemen Pengguna{% endblock %}
+{% block page_subtitle %}Kelola akun mahasiswa dan petugas sistem{% endblock %}
+
+{% block content %}
+<!-- Tabs -->
+<div style="display:flex;gap:4px;background:var(--bg-card);border-radius:12px;padding:4px;
+            width:fit-content;margin-bottom:20px;border:1px solid var(--border-color);">
+    {% for tab in ['Mahasiswa', 'Petugas Admin'] %}
+    <button onclick="switchTab(this, '{{ tab }}')"
+            style="padding:7px 18px;border-radius:9px;border:none;font-size:13px;font-weight:500;
+                   cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;
+                   {% if loop.first %}background:var(--accent-blue);color:white;
+                   {% else %}background:transparent;color:var(--text-secondary);{% endif %}">
+        {{ tab }}
+    </button>
+    {% endfor %}
+</div>
+
+<!-- Filter Bar -->
+<div class="card-dark mb-4">
+    <form method="GET" action="{{ url_for('users.index') }}" class="d-flex align-items-center gap-3">
+        <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;
+                    background:var(--bg-secondary);border:1px solid var(--border-color);
+                    border-radius:10px;padding:8px 14px;">
+            <i class="bi bi-search" style="color:var(--text-muted);"></i>
+            <input type="text" name="search" value="{{ current_search or '' }}"
+                   placeholder="Cari NIM atau nama mahasiswa..."
+                   style="background:none;border:none;outline:none;color:var(--text-primary);
+                          font-size:13px;width:100%;font-family:'Inter',sans-serif;">
+        </div>
+        <select name="prodi" style="background:var(--bg-secondary);border:1px solid var(--border-color);
+                       border-radius:10px;padding:8px 14px;color:var(--text-primary);
+                       font-size:13px;outline:none;font-family:'Inter',sans-serif;">
+            <option value="">Semua Program Studi</option>
+            <option value="Teknik Informatika" {% if current_prodi == 'Teknik Informatika' %}selected{% endif %}>Teknik Informatika</option>
+            <option value="Sistem Informasi" {% if current_prodi == 'Sistem Informasi' %}selected{% endif %}>Sistem Informasi</option>
+            <option value="Manajemen" {% if current_prodi == 'Manajemen' %}selected{% endif %}>Manajemen</option>
+        </select>
+        <button type="submit" class="btn-ghost"><i class="bi bi-funnel"></i> Filter</button>
+        {% if current_search or current_prodi %}
+        <a href="{{ url_for('users.index') }}" class="btn-ghost" style="color:var(--accent-red);" title="Reset Filter">
+            <i class="bi bi-x-circle"></i> Reset
+        </a>
+        {% endif %}
+        <button type="button" class="btn-primary-dark ms-auto"><i class="bi bi-person-plus me-2"></i>Tambah Petugas</button>
+    </form>
+</div>
+
+<!-- Users Table -->
+<div class="card-dark">
+    <div class="card-header-custom">
+        <div>
+            <div class="card-title">Daftar Mahasiswa</div>
+            <div class="card-subtitle" id="userCountSubtitle">{{ user_count }} mahasiswa terdaftar</div>
+        </div>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="table-dark-custom" id="usersTable">
+            <thead>
+                <tr>
+                    <th style="width:40px;">
+                        <input type="checkbox" id="selectAllUsersCheckbox" class="custom-table-checkbox"
+                               title="Centang Semua Mahasiswa">
+                    </th>
+                    <th>NIM</th>
+                    <th>Nama</th>
+                    <th>Program Studi</th>
+                    <th>Semester</th>
+                    <th>Pengaduan</th>
+                    <th>Status</th>
+                    <th>Bergabung</th>
+                    <th style="min-width:130px;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span>Aksi</span>
+                            <button type="button" id="btnDeleteAllUsers" class="btn-trash-header"
+                                    title="Hapus Semua Mahasiswa">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                {% if users %}
+                    {% for u in users %}
+                    <tr id="user-row-{{ u.id }}" class="user-row" data-id="{{ u.id }}">
+                        <td>
+                            <input type="checkbox" class="custom-table-checkbox user-row-checkbox"
+                                   data-id="{{ u.id }}" data-nim="{{ u.nim }}">
+                        </td>
+                        <td><span style="font-family:monospace;font-size:12px;color:var(--text-secondary);font-weight:600;">{{ u.nim }}</span></td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:30px;height:30px;border-radius:8px;flex-shrink:0;
+                                            background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+                                            display:flex;align-items:center;justify-content:center;
+                                            font-size:12px;font-weight:700;">{{ (u.full_name or 'M')[0] }}</div>
+                                <span style="font-size:13px;font-weight:500;">{{ u.full_name }}</span>
+                            </div>
+                        </td>
+                        <td><span style="font-size:12px;color:var(--text-secondary);">{{ u.program_studi }}</span></td>
+                        <td style="font-size:13px;text-align:center;">{{ u.semester }}</td>
+                        <td>
+                            <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;
+                                         {% if u.complaints|length > 2 %}color:var(--accent-yellow);{% else %}color:var(--text-secondary);{% endif %}">
+                                <i class="bi bi-file-earmark-text"></i> {{ u.complaints|length }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-size:11px;color:var(--accent-green);font-weight:600;">
+                                <i class="bi bi-circle-fill" style="font-size:7px;"></i> Aktif
+                            </span>
+                        </td>
+                        <td style="font-size:12px;color:var(--text-muted);">{{ u.created_at.strftime('%b %Y') if u.created_at else '—' }}</td>
+                        <td>
+                            <div class="d-flex gap-1 align-items-center">
+                                <button type="button" class="topbar-btn" style="width:30px;height:30px;border-radius:7px;" title="Lihat Riwayat">
+                                    <i class="bi bi-eye" style="font-size:13px;"></i>
+                                </button>
+                                <button type="button" class="topbar-btn" style="width:30px;height:30px;border-radius:7px;color:var(--accent-yellow);" title="Nonaktifkan / Blokir">
+                                    <i class="bi bi-slash-circle" style="font-size:13px;"></i>
+                                </button>
+                                <button type="button" class="topbar-btn btn-delete-user"
+                                        data-id="{{ u.id }}"
+                                        data-nim="{{ u.nim }}"
+                                        data-name="{{ u.full_name }}"
+                                        style="width:30px;height:30px;border-radius:7px;color:var(--accent-red);"
+                                        title="Hapus Mahasiswa {{ u.full_name }}">
+                                    <i class="bi bi-trash3" style="font-size:13px;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr id="emptyUserPlaceholder">
+                        <td colspan="9" style="text-align:center;padding:48px 20px;color:var(--text-muted);">
+                            <div style="font-size:38px;margin-bottom:12px;opacity:0.6;">👥</div>
+                            <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">
+                                Tidak ada data mahasiswa
+                            </div>
+                            <div style="font-size:12px;">Semua data akun mahasiswa telah dihapus permanen dari database.</div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Mahasiswa Mock-up -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content" style="background: var(--bg-card); border: 1px solid rgba(239, 68, 68, 0.45); border-radius: 18px; box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 35px rgba(239, 68, 68, 0.2); overflow: hidden;">
+            <div class="modal-body text-center p-4">
+                <!-- Glowing Warning Icon -->
+                <div style="width: 68px; height: 68px; border-radius: 50%;
+                            background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.4);
+                            display: flex; align-items: center; justify-content: center;
+                            margin: 4px auto 18px; box-shadow: 0 0 24px rgba(239, 68, 68, 0.25);">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 30px; color: var(--accent-red);"></i>
+                </div>
+
+                <h5 id="deleteUserModalLabel" style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 14px;">
+                    Konfirmasi Hapus Pengguna
+                </h5>
+
+                <!-- Peringatan Persis Sesuai Permintaan -->
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35);
+                            border-left: 4px solid var(--accent-red); border-radius: 10px;
+                            padding: 14px 16px; margin-bottom: 18px; text-align: left;">
+                    <div style="font-size: 13.5px; color: #fca5a5; font-weight: 500; line-height: 1.5;">
+                        <i class="bi bi-shield-fill-x me-1 text-danger"></i>
+                        bahwa data yang sudah di hapus tidak akan bisa di kembalikan lagi,anda yakin ingin hapus?
+                    </div>
+                </div>
+
+                <div id="deleteUserTargetDesc" style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 24px;">
+                    Aksi ini akan menghapus akun mahasiswa yang dipilih secara permanen dari sistem.
+                </div>
+
+                <!-- 2 Fitur: Batal dan Hapus -->
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn" data-bs-dismiss="modal"
+                            style="flex: 1; padding: 11px 18px; border-radius: 10px;
+                                   background: var(--bg-secondary); border: 1px solid var(--border-color);
+                                   color: var(--text-secondary); font-weight: 600; font-size: 14px;
+                                   transition: all 0.2s;">
+                        <i class="bi bi-x-circle me-1"></i> Batal
+                    </button>
+                    <button type="button" id="btnConfirmDeleteUser"
+                            style="flex: 1; padding: 11px 18px; border-radius: 10px;
+                                   background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
+                                   color: white; font-weight: 600; font-size: 14px;
+                                   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+                                   transition: all 0.2s; cursor: pointer;">
+                        <i class="bi bi-trash3-fill me-1"></i> Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Feedback -->
+<div id="userDeleteToast" style="position:fixed;bottom:24px;right:24px;z-index:9999;
+                                 background:var(--bg-card);border:1px solid #10b981;
+                                 border-radius:12px;padding:12px 18px;display:none;
+                                 align-items:center;gap:10px;box-shadow:0 10px 25px rgba(0,0,0,0.5);
+                                 animation:slideInUp 0.3s ease;">
+    <i class="bi bi-check-circle-fill" style="color:#10b981;font-size:18px;"></i>
+    <span id="userDeleteToastMsg" style="font-size:13px;color:var(--text-primary);font-weight:500;">
+        Data pengguna berhasil dihapus!
+    </span>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .custom-table-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--accent-blue);
+        border-radius: 4px;
+        vertical-align: middle;
+        transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .custom-table-checkbox:hover {
+        transform: scale(1.15);
+        filter: brightness(1.2);
+    }
+    .btn-trash-header {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: var(--accent-red);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+        margin-left: 8px;
+    }
+    .btn-trash-header:hover {
+        background: var(--accent-red);
+        color: #ffffff;
+        border-color: var(--accent-red);
+        transform: scale(1.1);
+        box-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
+    }
+    .btn-delete-user:hover {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #f87171 !important;
+        border-color: rgba(239, 68, 68, 0.4) !important;
+        transform: scale(1.08);
+    }
+    .user-row.selected td {
+        background: rgba(37, 99, 235, 0.08) !important;
+    }
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(btn, tabName) {
+    document.querySelectorAll('[onclick^="switchTab"]').forEach(b => {
+        b.style.background = 'transparent';
+        b.style.color = 'var(--text-secondary)';
+    });
+    btn.style.background = 'var(--accent-blue)';
+    btn.style.color = 'white';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAllCheckbox = document.getElementById('selectAllUsersCheckbox');
+    const btnDeleteAllUsers = document.getElementById('btnDeleteAllUsers');
+    const deleteUserModalEl = document.getElementById('deleteUserModal');
+    const deleteModal = new bootstrap.Modal(deleteUserModalEl);
+    const btnConfirmDelete = document.getElementById('btnConfirmDeleteUser');
+    const deleteTargetDesc = document.getElementById('deleteUserTargetDesc');
+    const userToast = document.getElementById('userDeleteToast');
+    const userToastMsg = document.getElementById('userDeleteToastMsg');
+    const userCountSubtitle = document.getElementById('userCountSubtitle');
+
+    let deleteMode = 'all'; // 'all', 'selected', 'single'
+    let singleTargetId = null;
+    let singleTargetNim = null;
+
+    // Centang Semua
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function () {
+            const isChecked = this.checked;
+            document.querySelectorAll('.user-row-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+                const row = cb.closest('tr');
+                if (row) {
+                    if (isChecked) row.classList.add('selected');
+                    else row.classList.remove('selected');
+                }
+            });
+            updateHeaderTrashState();
+        });
+    }
+
+    // Centang per-baris
+    function bindUserCheckboxes() {
+        document.querySelectorAll('.user-row-checkbox').forEach(cb => {
+            cb.addEventListener('change', function () {
+                const row = this.closest('tr');
+                if (row) {
+                    if (this.checked) row.classList.add('selected');
+                    else row.classList.remove('selected');
+                }
+                syncSelectAll();
+                updateHeaderTrashState();
+            });
+        });
+    }
+    bindUserCheckboxes();
+
+    function syncSelectAll() {
+        const total = document.querySelectorAll('.user-row-checkbox').length;
+        const checked = document.querySelectorAll('.user-row-checkbox:checked').length;
+        if (!selectAllCheckbox) return;
+
+        if (total === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checked === total) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checked > 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
+    }
+
+    function updateHeaderTrashState() {
+        const checkedCount = document.querySelectorAll('.user-row-checkbox:checked').length;
+        if (checkedCount > 0) {
+            btnDeleteAllUsers.style.background = 'var(--accent-red)';
+            btnDeleteAllUsers.style.color = '#ffffff';
+            btnDeleteAllUsers.title = `Hapus ${checkedCount} mahasiswa yang dicentang secara permanen`;
+        } else {
+            btnDeleteAllUsers.style.background = 'rgba(239, 68, 68, 0.12)';
+            btnDeleteAllUsers.style.color = 'var(--accent-red)';
+            btnDeleteAllUsers.title = 'Hapus Semua Mahasiswa Permanen';
+        }
+    }
+
+    // Klik Tong Sampah Header
+    if (btnDeleteAllUsers) {
+        btnDeleteAllUsers.addEventListener('click', function () {
+            const checkedCount = document.querySelectorAll('.user-row-checkbox:checked').length;
+            const totalRows = document.querySelectorAll('.user-row').length;
+
+            if (totalRows === 0) {
+                showToast('Tidak ada data mahasiswa untuk dihapus.', 'info');
+                return;
+            }
+
+            deleteMode = checkedCount > 0 ? 'selected' : 'all';
+            singleTargetId = null;
+            singleTargetNim = null;
+
+            if (deleteMode === 'selected') {
+                deleteTargetDesc.innerHTML = `Aksi ini akan menghapus <strong>${checkedCount} akun mahasiswa yang dicentang</strong> secara permanen dari database.`;
+            } else {
+                deleteTargetDesc.innerHTML = `Aksi ini akan menghapus <strong>seluruh data mahasiswa (${totalRows} akun)</strong> secara permanen dari database.`;
+            }
+
+            deleteModal.show();
+        });
+    }
+
+    // Klik Tong Sampah Baris
+    function bindSingleDeleteUser() {
+        document.querySelectorAll('.btn-delete-user').forEach(btn => {
+            btn.addEventListener('click', function () {
+                deleteMode = 'single';
+                singleTargetId = this.getAttribute('data-id');
+                singleTargetNim = this.getAttribute('data-nim');
+                const name = this.getAttribute('data-name') || '';
+
+                deleteTargetDesc.innerHTML = `Aksi ini akan menghapus akun mahasiswa <strong>${name}</strong> (NIM: <strong>${singleTargetNim}</strong>) secara permanen dari database.`;
+                deleteModal.show();
+            });
+        });
+    }
+    bindSingleDeleteUser();
+
+    // Konfirmasi Hapus Permanen ke Database
+    if (btnConfirmDelete) {
+        btnConfirmDelete.addEventListener('click', async function () {
+            deleteModal.hide();
+            btnConfirmDelete.disabled = true;
+
+            try {
+                let response, result;
+
+                if (deleteMode === 'single') {
+                    response = await fetch(`/users/${singleTargetId}/delete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    result = await response.json();
+
+                    if (result.success) {
+                        const row = document.getElementById(`user-row-${singleTargetId}`);
+                        if (row) animateRemoveUserRow(row);
+                        updateUserCount(result.remaining_count);
+                        showToast(result.message || `Akun mahasiswa berhasil dihapus permanen!`, 'success');
+                    } else {
+                        showToast(result.message || 'Gagal menghapus mahasiswa.', 'error');
+                    }
+                } else {
+                    let ids = 'all';
+                    if (deleteMode === 'selected') {
+                        ids = Array.from(document.querySelectorAll('.user-row-checkbox:checked')).map(cb => parseInt(cb.getAttribute('data-id')));
+                    }
+
+                    response = await fetch('/users/delete-bulk', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids: ids })
+                    });
+                    result = await response.json();
+
+                    if (result.success) {
+                        if (ids === 'all') {
+                            document.querySelectorAll('.user-row').forEach(row => animateRemoveUserRow(row));
+                        } else {
+                            ids.forEach(id => {
+                                const row = document.getElementById(`user-row-${id}`);
+                                if (row) animateRemoveUserRow(row);
+                            });
+                        }
+                        updateUserCount(result.remaining_count);
+                        showToast(result.message || 'Data akun mahasiswa berhasil dihapus permanen!', 'success');
+                    } else {
+                        showToast(result.message || 'Gagal menghapus akun mahasiswa.', 'error');
+                    }
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+                showToast('Terjadi kesalahan saat menghapus akun mahasiswa.', 'error');
+            } finally {
+                btnConfirmDelete.disabled = false;
+            }
+        });
+    }
+
+    function animateRemoveUserRow(row) {
+        row.style.transition = 'all 0.35s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(24px)';
+        setTimeout(() => {
+            row.remove();
+            checkUserEmptyState();
+        }, 350);
+    }
+
+    function updateUserCount(count) {
+        if (userCountSubtitle && count !== undefined) {
+            userCountSubtitle.textContent = `${count} mahasiswa terdaftar`;
+        }
+        syncSelectAll();
+        updateHeaderTrashState();
+    }
+
+    function checkUserEmptyState() {
+        const tbody = document.getElementById('usersTableBody');
+        const remaining = tbody.querySelectorAll('.user-row').length;
+
+        if (remaining === 0) {
+            tbody.innerHTML = `
+                <tr id="emptyUserPlaceholder">
+                    <td colspan="9" style="text-align:center;padding:48px 20px;color:var(--text-muted);">
+                        <div style="font-size:38px;margin-bottom:12px;opacity:0.6;">👥</div>
+                        <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">
+                            Tidak ada data mahasiswa
+                        </div>
+                        <div style="font-size:12px;">Semua data akun mahasiswa telah dihapus permanen dari database.</div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function showToast(msg, type = 'success') {
+        if (!userToast) return;
+        userToastMsg.textContent = msg;
+        userToast.style.display = 'flex';
+        userToast.style.borderColor = type === 'success' ? '#10b981' : '#3b82f6';
+        setTimeout(() => {
+            userToast.style.transition = 'opacity 0.4s ease';
+            userToast.style.opacity = '0';
+            setTimeout(() => {
+                userToast.style.display = 'none';
+                userToast.style.opacity = '1';
+            }, 400);
+        }, 3200);
+    }
+});
+</script>
+{% endblock %}

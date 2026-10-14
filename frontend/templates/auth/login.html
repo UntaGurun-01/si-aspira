@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}Login - SI Pengaduan Mahasiswa{% endblock %}
+
+{% block content %}
+<!-- Modern Showcase Window (Reference UI Style) -->
+<div class="auth-showcase-window">
+    <!-- Left Section: Hero Branding & Typography -->
+    <div class="auth-showcase-left">
+        <!-- Brand Badge -->
+        <div class="auth-brand-badge">
+            <div class="auth-brand-logo-circle">
+                <img src="{{ url_for('static', filename='img/logo_kampus.png') }}" alt="Logo Universitas Pahlawan">
+            </div>
+            <div class="auth-brand-text">
+                <span class="auth-brand-name">Si ASPIRA</span>
+                <span class="auth-brand-sub">Teknik Informatika · UP</span>
+            </div>
+        </div>
+
+        <!-- Hero Headline (Inspired by "EXPLORE HORIZONS") -->
+        <div class="auth-hero-content">
+            <h1 class="auth-hero-heading">
+                SUARAKAN<br>
+                ASPIRASI
+            </h1>
+            <p class="auth-hero-subheading">
+                Wadah Pengaduan & Saran Mahasiswa Berbasis Digital.
+            </p>
+            <p class="auth-hero-desc">
+                Sampaikan aspirasi, keluhan fasilitas, dan kritik akademik secara terstruktur, transparan, dan terpantau langsung oleh program studi.
+            </p>
+        </div>
+
+        <!-- Bottom campus badge / year -->
+        <div style="font-size: 0.75rem; color: rgba(255,255,255,0.65); letter-spacing: 0.5px;">
+            <i class="bi bi-shield-check me-1"></i> Universitas Pahlawan Tuanku Tambusai
+        </div>
+    </div>
+
+    <!-- Right Section: Frosted Glass Login Panel -->
+    <div class="auth-showcase-right">
+        <div class="auth-frosted-card">
+            <!-- Flash Message inside card for immediate visibility -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div style="margin-bottom: 16px;">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="font-size:0.825rem;padding:10px 14px;border-radius:10px;margin-bottom:8px;background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;display:flex;align-items:center;gap:8px;">
+                    <i class="bi bi-exclamation-triangle-fill" style="flex-shrink:0;"></i>
+                    <span>{{ message | safe }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm" autocomplete="off">
+                <!-- Username (NIM Mahasiswa) Field -->
+                <div class="auth-input-group">
+                    <label class="auth-input-label" for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="auth-input-white"
+                        placeholder="Masukkan NIM Anda (contoh: 2455201016)"
+                        required
+                        autocomplete="off"
+                        readonly
+                        onfocus="this.removeAttribute('readonly')"
+                    >
+                </div>
+
+                <!-- Password Field -->
+                <div class="auth-input-group">
+                    <label class="auth-input-label" for="password">Password</label>
+                    <div class="auth-password-wrapper">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="auth-input-white auth-password-input"
+                            placeholder="Masukkan kata sandi"
+                            required
+                            autocomplete="new-password"
+                            readonly
+                            onfocus="this.removeAttribute('readonly')"
+                        >
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            class="auth-password-toggle"
+                            onclick="togglePasswordVisibility('password', 'togglePasswordIcon')"
+                            aria-label="Tampilkan kata sandi"
+                        >
+                            <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Auxiliary Row: Remember & Help -->
+                <div class="auth-aux-row">
+                    <label class="auth-remember-check">
+                        <input type="checkbox" name="remember" id="remember">
+                        <span>Ingat saya</span>
+                    </label>
+                    <span style="font-size:0.75rem;color:rgba(255,255,255,0.65);">
+                        <i class="bi bi-mortarboard-fill me-1"></i> Akun Mahasiswa
+                    </span>
+                </div>
+
+                <!-- Sign In Button -->
+                <button type="submit" class="auth-btn-signin" id="loginBtn">
+                    SIGN IN
+                </button>
+
+                <!-- Footer Text -->
+                <div class="auth-footer-text" style="margin-top: 24px;">
+                    Belum punya akun? <a href="{{ url_for('auth.register') }}">Daftar sekarang</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('loginBtn');
+    if (btn) {
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>MEMPROSES...';
+    }
+});
+</script>
+{% endblock %}

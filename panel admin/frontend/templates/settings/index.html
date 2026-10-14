@@ -1,0 +1,726 @@
+{% extends 'base.html' %}
+{% block title %}Pengaturan Sistem{% endblock %}
+{% block page_title %}Pengaturan Sistem{% endblock %}
+{% block page_subtitle %}Konfigurasi dan manajemen sistem pengaduan{% endblock %}
+
+{% block content %}
+<!-- Floating Toast Container -->
+<div id="toastContainer" style="position:fixed;top:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;"></div>
+
+<div class="row g-3">
+    <!-- Left: Settings Menu -->
+    <div class="col-xl-3">
+        <div class="card-dark" style="padding:8px;">
+            {% set menus = [
+                ('person-circle','Profil Admin','profil'),
+                ('shield-lock','Ubah Password','password'),
+                ('tags','Kategori Pengaduan','kategori'),
+                ('building','Data Program Studi','prodi'),
+                ('bell','Notifikasi','notif'),
+                ('file-earmark-text','Log Aktivitas','log'),
+                ('info-circle','Informasi Sistem','info'),
+            ] %}
+            {% for icon, label, key in menus %}
+            <div onclick="showSection('{{ key }}')"
+                 id="menu-{{ key }}"
+                 style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+                        border-radius:9px;cursor:pointer;transition:all 0.2s;
+                        {% if loop.first %}background:rgba(37,99,235,0.15);color:var(--accent-blue-light);
+                        {% else %}color:var(--text-secondary);{% endif %}
+                        font-size:13px;font-weight:500;">
+                <i class="bi bi-{{ icon }}" style="font-size:16px;min-width:18px;text-align:center;"></i>
+                {{ label }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right: Settings Content -->
+    <div class="col-xl-9">
+        <!-- 1. Profil Admin -->
+        <div class="card-dark" id="section-profil">
+            <div class="card-header-custom">
+                <div class="card-title">Profil Admin</div>
+            </div>
+            
+            <form id="profileForm" onsubmit="saveProfile(event)" enctype="multipart/form-data">
+                <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;" onchange="previewAvatar(this)">
+                
+                <div class="d-flex align-items-center mb-4" style="gap:20px;">
+                    <div style="position:relative;cursor:pointer;" onclick="document.getElementById('avatarInput').click()" title="Klik untuk ganti foto profil">
+                        <div id="profileAvatarPreview"
+                             style="width:72px;height:72px;border-radius:18px;
+                                    background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+                                    display:flex;align-items:center;justify-content:center;
+                                    font-size:28px;font-weight:700;overflow:hidden;border:2px solid var(--border-color);">
+                            {% if current_user.avatar %}
+                            <img src="/static/uploads/avatars/{{ current_user.avatar }}" style="width:100%;height:100%;object-fit:cover;">
+                            {% else %}
+                            <span id="avatarInitial">{{ current_user.name[0].upper() if current_user.name else 'A' }}</span>
+                            {% endif %}
+                        </div>
+                        <button type="button"
+                                style="position:absolute;bottom:-4px;right:-4px;width:26px;height:26px;
+                                       border-radius:50%;background:var(--accent-blue);border:2px solid var(--bg-card);
+                                       color:white;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+                                       box-shadow:0 2px 6px rgba(0,0,0,0.4);"
+                                onclick="event.stopPropagation(); document.getElementById('avatarInput').click();">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <div style="font-size:18px;font-weight:700;" id="displayProfileName">{{ current_user.name }}</div>
+                        <div style="font-size:13px;color:var(--text-secondary);" id="displayProfileEmail">{{ current_user.email }}</div>
+                        <span style="font-size:11px;background:rgba(37,99,235,0.15);color:var(--accent-blue-light);
+                                     padding:2px 10px;border-radius:20px;font-weight:600;display:inline-block;margin-top:6px;">
+                            {{ current_user.role.capitalize() if current_user.role else 'Superadmin' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                            NAMA LENGKAP
+                        </label>
+                        <input type="text" name="name" id="inputName" value="{{ current_user.name or '' }}" required
+                               style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                      border-radius:10px;padding:10px 14px;color:var(--text-primary);
+                                      font-size:13px;outline:none;font-family:'Inter',sans-serif;
+                                      transition:border-color 0.2s;"
+                               onfocus="this.style.borderColor='var(--accent-blue)'"
+                               onblur="this.style.borderColor='var(--border-color)'">
+                    </div>
+                    <div class="col-md-6">
+                        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                            USERNAME
+                        </label>
+                        <input type="text" name="username" id="inputUsername" value="{{ current_user.username or '' }}" required
+                               style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                      border-radius:10px;padding:10px 14px;color:var(--text-primary);
+                                      font-size:13px;outline:none;font-family:'Inter',sans-serif;
+                                      transition:border-color 0.2s;"
+                               onfocus="this.style.borderColor='var(--accent-blue)'"
+                               onblur="this.style.borderColor='var(--border-color)'">
+                    </div>
+                    <div class="col-md-6">
+                        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                            EMAIL
+                        </label>
+                        <input type="email" name="email" id="inputEmail" value="{{ current_user.email or '' }}" required
+                               style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                      border-radius:10px;padding:10px 14px;color:var(--text-primary);
+                                      font-size:13px;outline:none;font-family:'Inter',sans-serif;
+                                      transition:border-color 0.2s;"
+                               onfocus="this.style.borderColor='var(--accent-blue)'"
+                               onblur="this.style.borderColor='var(--border-color)'">
+                    </div>
+                    <div class="col-md-6">
+                        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                            NOMOR HP
+                        </label>
+                        <input type="tel" name="phone" id="inputPhone" value="{{ current_user.phone or '' }}" placeholder="Contoh: 08123456789"
+                               style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                      border-radius:10px;padding:10px 14px;color:var(--text-primary);
+                                      font-size:13px;outline:none;font-family:'Inter',sans-serif;
+                                      transition:border-color 0.2s;"
+                               onfocus="this.style.borderColor='var(--accent-blue)'"
+                               onblur="this.style.borderColor='var(--border-color)'">
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex align-items-center gap-3">
+                    <button type="submit" class="btn-primary-dark" id="btnSaveProfile" style="cursor:pointer;">
+                        <i class="bi bi-floppy2 me-2"></i>Simpan Perubahan
+                    </button>
+                    <span id="saveStatusIndicator" style="font-size:13px;color:var(--accent-green);display:none;">
+                        <i class="bi bi-check-circle me-1"></i>Tersimpan
+                    </span>
+                </div>
+            </form>
+        </div>
+
+        <!-- 2. Ubah Password -->
+        <div class="card-dark" id="section-password" style="display:none;">
+            <div class="card-header-custom">
+                <div class="card-title">Ubah Password Akun Admin</div>
+                <div class="card-subtitle">Pastikan menggunakan kombinasi password yang kuat dan aman</div>
+            </div>
+            <form id="passwordForm" onsubmit="savePassword(event)" style="max-width:540px;">
+                <div class="mb-3">
+                    <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                        PASSWORD SAAT INI
+                    </label>
+                    <input type="password" id="currentPassword" required placeholder="Masukkan password saat ini"
+                           style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                  border-radius:10px;padding:10px 14px;color:var(--text-primary);
+                                  font-size:13px;outline:none;font-family:'Inter',sans-serif;">
+                </div>
+                <div class="mb-3">
+                    <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                        PASSWORD BARU
+                    </label>
+                    <input type="password" id="newPassword" required placeholder="Minimal 6 karakter"
+                           style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                  border-radius:10px;padding:10px 14px;color:var(--text-primary);
+                                  font-size:13px;outline:none;font-family:'Inter',sans-serif;">
+                </div>
+                <div class="mb-4">
+                    <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                        KONFIRMASI PASSWORD BARU
+                    </label>
+                    <input type="password" id="confirmPassword" required placeholder="Ulangi password baru"
+                           style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                  border-radius:10px;padding:10px 14px;color:var(--text-primary);
+                                  font-size:13px;outline:none;font-family:'Inter',sans-serif;">
+                </div>
+                <button type="submit" class="btn-primary-dark" id="btnSavePassword">
+                    <i class="bi bi-key me-2"></i>Perbarui Password
+                </button>
+            </form>
+        </div>
+
+        <!-- 3. Kategori Pengaduan -->
+        <div class="card-dark" id="section-kategori" style="display:none;">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Kelola Kategori Pengaduan</div>
+                    <div class="card-subtitle">Daftar kategori pengaduan yang aktif dalam sistem</div>
+                </div>
+            </div>
+            <table class="table-dark-custom">
+                <thead>
+                    <tr><th>Nama Kategori</th><th>Deskripsi</th><th style="text-align:center;">Total Laporan</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for kat in categories %}
+                    <tr>
+                        <td style="font-weight:500;font-size:13px;">{{ kat.name }}</td>
+                        <td style="font-size:12px;color:var(--text-secondary);">{{ kat.desc }}</td>
+                        <td style="font-size:13px;text-align:center;font-weight:600;">{{ kat.count }}</td>
+                        <td><span class="badge-status badge-resolved" style="font-size:11px;">Aktif</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. Data Program Studi -->
+        <div class="card-dark" id="section-prodi" style="display:none;">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Data Program Studi</div>
+                    <div class="card-subtitle">Daftar program studi dan jumlah mahasiswa terdaftar</div>
+                </div>
+            </div>
+            <table class="table-dark-custom">
+                <thead>
+                    <tr><th>Program Studi</th><th>Fakultas</th><th style="text-align:center;">Mahasiswa Terdaftar</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for p in prodi_data %}
+                    <tr>
+                        <td style="font-weight:500;font-size:13px;">{{ p.name }}</td>
+                        <td style="font-size:12px;color:var(--text-secondary);">Fakultas Teknik</td>
+                        <td style="font-size:13px;text-align:center;font-weight:600;">{{ p.count }}</td>
+                        <td><span class="badge-status badge-resolved" style="font-size:11px;">Aktif</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 5. Notifikasi -->
+        <div class="card-dark" id="section-notif" style="display:none;">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Pengaturan Notifikasi & Nada Suara</div>
+                    <div class="card-subtitle">Kustomisasi nada notifikasi dan preferensi pemberitahuan pengaduan</div>
+                </div>
+            </div>
+
+            <form id="notifSettingsForm" onsubmit="saveNotificationSettings(event)" enctype="multipart/form-data">
+                <!-- Card: Custom Sound Audio MP3 -->
+                <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;padding:20px;margin-bottom:20px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:rgba(37,99,235,0.15);color:var(--accent-blue-light);display:flex;align-items:center;justify-content:center;font-size:18px;">
+                                <i class="bi bi-music-note-beamed"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:14px;font-weight:700;color:var(--text-primary);">Kustom Nada Notifikasi (.MP3)</div>
+                                <div style="font-size:12px;color:var(--text-secondary);">Pilih file audio MP3 dari perangkat Anda untuk berdering saat ada laporan baru</div>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="switchSoundEnabled" name="sound_enabled"
+                                   {% if current_user.notif_sound_enabled != False %}checked{% endif %} style="cursor:pointer;width:42px;height:22px;">
+                        </div>
+                    </div>
+
+                    <!-- Audio File Picker -->
+                    <input type="file" id="soundFileInput" name="sound_file" accept=".mp3,audio/mpeg" style="display:none;" onchange="onCustomSoundSelected(this)">
+
+                    <div style="background:var(--bg-card);border:1px dashed var(--border-color);border-radius:10px;padding:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:42px;height:42px;border-radius:50%;background:rgba(16,185,129,0.12);color:var(--accent-green);display:flex;align-items:center;justify-content:center;font-size:20px;">
+                                <i class="bi bi-file-earmark-music"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:13px;font-weight:600;color:var(--text-primary);" id="labelSoundFilename">
+                                    {{ sound_file }}
+                                </div>
+                                <div style="font-size:11px;color:var(--text-secondary);" id="labelSoundStatus">
+                                    {% if current_user.notif_sound_file %}
+                                    <span style="color:var(--accent-green);"><i class="bi bi-check-circle-fill me-1"></i>File Kustom Aktif</span>
+                                    {% else %}
+                                    <span>Nada Standar Sistem</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <button type="button" class="btn-primary-dark" onclick="document.getElementById('soundFileInput').click()" style="font-size:12px;padding:8px 14px;">
+                                <i class="bi bi-upload me-1"></i>Pilih File MP3 dari Perangkat
+                            </button>
+                            <button type="button" class="btn-ghost" id="btnPreviewSound" onclick="previewCurrentSound()" style="font-size:12px;padding:8px 12px;background:var(--bg-secondary);">
+                                <i class="bi bi-play-fill me-1" id="iconPlaySound"></i><span id="textPlaySound">Putar Nada</span>
+                            </button>
+                            <button type="button" class="btn-ghost" onclick="resetSoundDefault()" style="font-size:12px;padding:8px 12px;color:var(--text-muted);" title="Kembalikan ke nada bawaan">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+                        <i class="bi bi-info-circle me-1"></i>Format yang didukung: <strong>.mp3</strong> dari penyimpanan lokal komputer/perangkat Anda.
+                    </div>
+                </div>
+
+                <!-- Card: System Notification Toggles -->
+                <div class="d-flex flex-column gap-3 mb-4" style="max-width:100%;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:10px;">
+                        <div>
+                            <div style="font-size:13px;font-weight:600;">Notifikasi Email Masuk</div>
+                            <div style="font-size:12px;color:var(--text-secondary);">Kirimkan notifikasi email ketika ada pengaduan baru masuk</div>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="switchNotifEmail" name="notif_email"
+                                   {% if current_user.notif_email != False %}checked{% endif %} style="cursor:pointer;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:10px;">
+                        <div>
+                            <div style="font-size:13px;font-weight:600;">Notifikasi Perubahan Status</div>
+                            <div style="font-size:12px;color:var(--text-secondary);">Pemberitahuan ketika status pengaduan diperbarui oleh petugas</div>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="switchNotifStatus" name="notif_status"
+                                   {% if current_user.notif_status != False %}checked{% endif %} style="cursor:pointer;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:10px;">
+                        <div>
+                            <div style="font-size:13px;font-weight:600;">Peringatan Pengaduan Tertunda</div>
+                            <div style="font-size:12px;color:var(--text-secondary);">Beri tanda khusus jika pengaduan belum ditangani lebih dari 3 hari</div>
+                        </div>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="switchNotifPending" name="notif_pending"
+                                   {% if current_user.notif_pending != False %}checked{% endif %} style="cursor:pointer;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <button type="submit" class="btn-primary-dark" id="btnSaveNotifSettings">
+                        <i class="bi bi-floppy2 me-2"></i>Simpan Pengaturan Notifikasi
+                    </button>
+                    <span id="saveNotifIndicator" style="font-size:13px;color:var(--accent-green);display:none;">
+                        <i class="bi bi-check-circle me-1"></i>Pengaturan Tersimpan
+                    </span>
+                </div>
+            </form>
+        </div>
+
+        <!-- 6. Log Aktivitas -->
+        <div class="card-dark" id="section-log" style="display:none;">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Log Aktivitas Sistem</div>
+                    <div class="card-subtitle">Riwayat perubahan status dan aktivitas penanganan pengaduan</div>
+                </div>
+            </div>
+            {% if activity_logs %}
+                {% for l in activity_logs %}
+                <div style="display:flex;align-items:start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(48,54,61,0.5);">
+                    <div style="width:8px;height:8px;border-radius:50%;background:var(--accent-blue-light);flex-shrink:0;margin-top:5px;"></div>
+                    <div style="flex:1;">
+                        <div style="font-size:13px;font-weight:500;margin-bottom:2px;">Ubah Status: {{ l.new_status.capitalize() }}</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">{{ l.note or 'Tidak ada catatan tambahan' }}</div>
+                    </div>
+                    <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;">
+                        {{ l.created_at.strftime('%d %b %H:%M') if l.created_at else '-' }} • {{ l.changed_by }}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align:center;padding:50px 20px;color:var(--text-muted);">
+                    <i class="bi bi-journal-text" style="font-size:36px;display:block;margin-bottom:8px;opacity:0.4;"></i>
+                    <div style="font-size:13px;font-weight:500;">Belum ada riwayat log aktivitas</div>
+                    <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Log akan tercatat secara otomatis saat ada aksi pada pengaduan</div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 7. Informasi Sistem -->
+        <div class="card-dark" id="section-info" style="display:none;">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Informasi Sistem</div>
+                    <div class="card-subtitle">Spesifikasi server dan konfigurasi lingkungan aplikasi</div>
+                </div>
+            </div>
+            <div class="row g-3">
+                {% for key, val in [
+                    ('Sistem Operasi', system_info.os),
+                    ('Versi Python', system_info.python_version),
+                    ('Framework', system_info.framework),
+                    ('Basis Data', system_info.database),
+                    ('Port Server Admin', system_info.server_port),
+                    ('Status Server', system_info.status),
+                ] %}
+                <div class="col-md-6">
+                    <div style="padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border-color);">
+                        <div style="font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;">{{ key }}</div>
+                        <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-top:4px;">{{ val }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Switch section tab
+const sections = ['profil','password','kategori','prodi','notif','log','info'];
+function showSection(key) {
+    sections.forEach(s => {
+        const sec = document.getElementById('section-' + s);
+        const menu = document.getElementById('menu-' + s);
+        if(sec) sec.style.display = (s === key) ? 'block' : 'none';
+        if(menu) {
+            menu.style.background = (s === key) ? 'rgba(37,99,235,0.15)' : 'transparent';
+            menu.style.color = (s === key) ? 'var(--accent-blue-light)' : 'var(--text-secondary)';
+        }
+    });
+}
+
+// Toast notification helper
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    const bg = type === 'success' ? '#10b981' : '#ef4444';
+    const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+    
+    toast.style.cssText = `
+        background: #1c2128;
+        border: 1px solid ${bg};
+        border-left: 4px solid ${bg};
+        color: #e6edf3;
+        padding: 12px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: toastIn 0.3s ease;
+        min-width: 280px;
+    `;
+    toast.innerHTML = `<i class="bi ${icon}" style="color:${bg};font-size:16px;"></i><span>${message}</span>`;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+// Avatar client preview
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('profileAvatarPreview');
+            preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Save Profile form handler
+async function saveProfile(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btnSaveProfile');
+    const originalBtnHTML = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menyimpan...`;
+    
+    try {
+        const formData = new FormData();
+        formData.append('name', document.getElementById('inputName').value);
+        formData.append('username', document.getElementById('inputUsername').value);
+        formData.append('email', document.getElementById('inputEmail').value);
+        formData.append('phone', document.getElementById('inputPhone').value);
+        
+        const avatarFile = document.getElementById('avatarInput').files[0];
+        if (avatarFile) {
+            formData.append('avatar', avatarFile);
+        }
+
+        const response = await fetch('/settings/profile', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showToast(data.message, 'success');
+            
+            // Update display texts
+            document.getElementById('displayProfileName').textContent = data.admin.name;
+            document.getElementById('displayProfileEmail').textContent = data.admin.email;
+            
+            // Update sidebar & topbar name
+            const sidebarAdminName = document.getElementById('sidebar-admin-name');
+            if (sidebarAdminName) sidebarAdminName.textContent = data.admin.name;
+            
+            // Update avatar if changed
+            if (data.admin.avatar_url) {
+                const imgHtml = `<img src="${data.admin.avatar_url}" style="width:100%;height:100%;object-fit:cover;">`;
+                const sidebarAv = document.getElementById('sidebar-avatar');
+                const topbarAv = document.getElementById('topbar-avatar');
+                if (sidebarAv) sidebarAv.innerHTML = imgHtml;
+                if (topbarAv) topbarAv.innerHTML = imgHtml;
+            } else {
+                const init = data.admin.initial;
+                const sidebarInit = document.getElementById('sidebar-avatar-initial');
+                const topbarInit = document.getElementById('topbar-avatar-initial');
+                const avatarInit = document.getElementById('avatarInitial');
+                if (sidebarInit) sidebarInit.textContent = init;
+                if (topbarInit) topbarInit.textContent = init;
+                if (avatarInit) avatarInit.textContent = init;
+            }
+            
+            // Show inline green status badge briefly
+            const indicator = document.getElementById('saveStatusIndicator');
+            if (indicator) {
+                indicator.style.display = 'inline-flex';
+                setTimeout(() => { indicator.style.display = 'none'; }, 3000);
+            }
+        } else {
+            showToast(data.message || 'Gagal menyimpan perubahan.', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Terjadi kesalahan jaringan atau server.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHTML;
+    }
+}
+
+// Save Password handler
+async function savePassword(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btnSavePassword');
+    const originalHTML = btn.innerHTML;
+    
+    const curPass = document.getElementById('currentPassword').value;
+    const newPass = document.getElementById('newPassword').value;
+    const confPass = document.getElementById('confirmPassword').value;
+    
+    if (newPass !== confPass) {
+        showToast('Konfirmasi password tidak cocok!', 'error');
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menyimpan...`;
+    
+    try {
+        const response = await fetch('/settings/password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                current_password: curPass,
+                new_password: newPass,
+                confirm_password: confPass
+            })
+        });
+        
+        const data = await response.json();
+        if (response.ok && data.success) {
+            showToast(data.message, 'success');
+            document.getElementById('passwordForm').reset();
+        } else {
+            showToast(data.message || 'Gagal mengubah password.', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Terjadi kesalahan koneksi.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+// ─── NOTIFICATION & MP3 SOUND HANDLERS ─────────────────────────
+let tempSoundUrl = "{{ sound_url }}";
+let activeAudioPlayer = null;
+
+function onCustomSoundSelected(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (!file.name.toLowerCase().endsWith('.mp3')) {
+            showToast('Hanya file berformat .mp3 yang didukung!', 'error');
+            input.value = '';
+            return;
+        }
+
+        const sizeKb = Math.round(file.size / 1024);
+        document.getElementById('labelSoundFilename').innerHTML = `
+            ${file.name} <span class="badge bg-primary" style="font-size:10px;font-weight:500;">${sizeKb} KB (Siap diunggah)</span>
+        `;
+        document.getElementById('labelSoundStatus').innerHTML = `
+            <span style="color:var(--accent-yellow);"><i class="bi bi-hourglass-split me-1"></i>Belum disimpan ke server</span>
+        `;
+
+        tempSoundUrl = URL.createObjectURL(file);
+        showToast('File MP3 dipilih! Klik "Putar Nada" untuk mencoba atau "Simpan Pengaturan" untuk menetapkan.', 'success');
+    }
+}
+
+function previewCurrentSound() {
+    const icon = document.getElementById('iconPlaySound');
+    const text = document.getElementById('textPlaySound');
+
+    if (activeAudioPlayer) {
+        activeAudioPlayer.pause();
+        activeAudioPlayer = null;
+        if (icon) icon.className = 'bi bi-play-fill me-1';
+        if (text) text.textContent = 'Putar Nada';
+        return;
+    }
+
+    const audioUrl = tempSoundUrl || localStorage.getItem('admin_notif_sound_url') || '/static/uploads/audio/default_chime.mp3';
+    activeAudioPlayer = new Audio(audioUrl);
+    activeAudioPlayer.volume = 0.9;
+
+    if (icon) icon.className = 'bi bi-pause-fill me-1';
+    if (text) text.textContent = 'Stop';
+
+    activeAudioPlayer.play().catch(e => {
+        console.error('Audio play failed:', e);
+        showToast('Gagal memutar audio.', 'error');
+        if (icon) icon.className = 'bi bi-play-fill me-1';
+        if (text) text.textContent = 'Putar Nada';
+        activeAudioPlayer = null;
+    });
+
+    activeAudioPlayer.onended = () => {
+        if (icon) icon.className = 'bi bi-play-fill me-1';
+        if (text) text.textContent = 'Putar Nada';
+        activeAudioPlayer = null;
+    };
+}
+
+async function resetSoundDefault() {
+    try {
+        const res = await fetch('/settings/notifications/reset-sound', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            tempSoundUrl = data.sound_url;
+            document.getElementById('soundFileInput').value = '';
+            document.getElementById('labelSoundFilename').textContent = 'default_chime.mp3';
+            document.getElementById('labelSoundStatus').innerHTML = '<span>Nada Standar Sistem</span>';
+            localStorage.setItem('admin_notif_sound_url', data.sound_url);
+            showToast(data.message, 'success');
+        }
+    } catch(e) {
+        showToast('Gagal mereset nada suara.', 'error');
+    }
+}
+
+async function saveNotificationSettings(event) {
+    event.preventDefault();
+    const btn = document.getElementById('btnSaveNotifSettings');
+    const originalHTML = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menyimpan...`;
+
+    try {
+        const formData = new FormData();
+        formData.append('sound_enabled', document.getElementById('switchSoundEnabled').checked ? '1' : '0');
+        formData.append('notif_email', document.getElementById('switchNotifEmail').checked ? '1' : '0');
+        formData.append('notif_status', document.getElementById('switchNotifStatus').checked ? '1' : '0');
+        formData.append('notif_pending', document.getElementById('switchNotifPending').checked ? '1' : '0');
+
+        const soundFile = document.getElementById('soundFileInput').files[0];
+        if (soundFile) {
+            formData.append('sound_file', soundFile);
+        }
+
+        const res = await fetch('/settings/notifications', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast(data.message, 'success');
+
+            if (data.settings && data.settings.sound_url) {
+                tempSoundUrl = data.settings.sound_url;
+                localStorage.setItem('admin_notif_sound_url', data.settings.sound_url);
+                localStorage.setItem('admin_notif_sound_enabled', data.settings.sound_enabled);
+                document.getElementById('labelSoundFilename').textContent = data.settings.sound_file;
+                document.getElementById('labelSoundStatus').innerHTML = `
+                    <span style="color:var(--accent-green);"><i class="bi bi-check-circle-fill me-1"></i>File Kustom Aktif</span>
+                `;
+            }
+
+            const indicator = document.getElementById('saveNotifIndicator');
+            if (indicator) {
+                indicator.style.display = 'inline-flex';
+                setTimeout(() => { indicator.style.display = 'none'; }, 3000);
+            }
+        } else {
+            showToast(data.message || 'Gagal menyimpan pengaturan notifikasi.', 'error');
+        }
+    } catch(err) {
+        console.error(err);
+        showToast('Terjadi kesalahan koneksi server.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+</script>
+
+<style>
+@keyframes toastIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+</style>
+{% endblock %}

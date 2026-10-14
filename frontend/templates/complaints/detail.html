@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% block title %}{{ complaint.ticket_number }} - Detail Pengaduan{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('complaint.list_complaints') }}" style="color:var(--text-muted);font-size:0.85rem;">Pengaduan Saya</a>
+<i class="bi bi-chevron-right mx-2" style="font-size:0.7rem;color:var(--text-muted);"></i>
+<span class="breadcrumb-item-text">{{ complaint.ticket_number }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Header Card -->
+        <div class="card-glass mb-4">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:250px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+                        <span class="category-badge">
+                            <i class="bi {{ complaint.category_icon }}"></i>
+                            {{ complaint.category_label }}
+                        </span>
+                        <span class="status-badge status-{{ complaint.status }}">{{ complaint.status_label }}</span>
+                    </div>
+                    <h1 style="font-size:1.4rem;font-weight:700;margin:0 0 12px;">{{ complaint.title }}</h1>
+                    <div style="display:flex;align-items:center;gap:16px;font-size:0.8rem;color:var(--text-muted);flex-wrap:wrap;">
+                        <span>
+                            <i class="bi bi-hash me-1"></i>
+                            <code style="font-family:monospace;color:var(--text-secondary);">{{ complaint.ticket_number }}</code>
+                            <button class="copy-ticket-btn" data-ticket="{{ complaint.ticket_number }}"
+                                style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:0 4px;font-size:0.875rem;">
+                                <i class="bi bi-copy"></i>
+                            </button>
+                        </span>
+                        <span><i class="bi bi-calendar3 me-1"></i>{{ complaint.created_at.strftime('%d %B %Y, %H:%M') }}</span>
+                        {% if complaint.attachments %}
+                        <span><i class="bi bi-paperclip me-1"></i>{{ complaint.attachments|length }} lampiran</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    <button type="button" class="btn-danger-glass" onclick="openDeleteModal()" id="btnDeleteComplaint">
+                        <i class="bi bi-trash3-fill"></i> Hapus Pengaduan
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="card-glass mb-4">
+            <h3 class="section-title"><i class="bi bi-file-text-fill"></i> Isi Pengaduan</h3>
+            <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.8;white-space:pre-wrap;">{{ complaint.description }}</div>
+        </div>
+
+        <!-- Attachments -->
+        {% if complaint.attachments %}
+        <div class="card-glass mb-4">
+            <h3 class="section-title"><i class="bi bi-paperclip"></i> Lampiran Bukti</h3>
+            <div class="row g-2">
+                {% for att in complaint.attachments %}
+                <div class="col-sm-6 col-md-4">
+                    {% if att.file_type in ['png', 'jpg', 'jpeg', 'gif', 'webp'] %}
+                    <a href="{{ url_for('static', filename='uploads/' + att.filename) }}"
+                       target="_blank" class="attachment-card image-attachment">
+                        <img src="{{ url_for('static', filename='uploads/' + att.filename) }}"
+                             alt="{{ att.original_filename }}" class="attachment-img">
+                        <div class="attachment-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                        <div class="attachment-name">{{ att.original_filename }}</div>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('static', filename='uploads/' + att.filename) }}"
+                       target="_blank" class="attachment-card doc-attachment">
+                        <div class="attachment-doc-icon">
+                            <i class="bi bi-file-earmark-{{ 'pdf' if att.file_type == 'pdf' else 'word' }}-fill"></i>
+                        </div>
+                        <div class="attachment-doc-info">
+                            <span class="attachment-name-doc">{{ att.original_filename }}</span>
+                            <span class="attachment-size">{{ att.file_type.upper() }}</span>
+                        </div>
+                        <i class="bi bi-download" style="color:var(--text-muted);"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Responses -->
+        {% if complaint.responses %}
+        <div class="card-glass mb-4" style="border-color:rgba(59,130,246,0.2);">
+            <h3 class="section-title"><i class="bi bi-chat-dots-fill" style="color:var(--accent-blue);"></i> Tanggapan Petugas</h3>
+            {% for response in complaint.responses %}
+            <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:var(--radius-md);padding:16px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                    <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;font-size:0.875rem;font-weight:700;color:white;flex-shrink:0;">P</div>
+                    <div>
+                        <p style="font-size:0.875rem;font-weight:600;color:var(--text-primary);margin:0;">{{ response.responder_name }}</p>
+                        <p style="font-size:0.75rem;color:var(--text-muted);margin:0;">{{ response.created_at.strftime('%d %B %Y, %H:%M') }}</p>
+                    </div>
+                </div>
+                <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.7;margin:0;white-space:pre-wrap;">{{ response.message }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-lg-4">
+        <!-- Status Progress -->
+        <div class="card-glass mb-4">
+            <h3 class="section-title"><i class="bi bi-activity"></i> Status Pengaduan</h3>
+
+            {% set steps = [
+                ('menunggu', 'Menunggu', 'bi-hourglass-split', 'Pengaduan diterima dan menunggu peninjauan'),
+                ('diproses', 'Sedang Diproses', 'bi-gear-fill', 'Tim sedang menangani pengaduanmu'),
+                ('selesai', 'Selesai', 'bi-check-circle-fill', 'Pengaduan telah berhasil diselesaikan'),
+            ] %}
+
+            {% set status_order = {'menunggu': 0, 'diproses': 1, 'selesai': 2, 'ditolak': 3} %}
+            {% set current_order = status_order.get(complaint.status, 0) %}
+
+            <div style="display:flex;flex-direction:column;gap:0;">
+                {% for step_key, step_label, step_icon, step_desc in steps %}
+                {% set step_order = loop.index0 %}
+                {% set is_done = current_order > step_order %}
+                {% set is_current = current_order == step_order and complaint.status != 'ditolak' %}
+                <div style="display:flex;gap:14px;position:relative;">
+                    <div style="display:flex;flex-direction:column;align-items:center;">
+                        <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.875rem;flex-shrink:0;
+                            {% if is_done %}background:var(--accent-green);color:white;
+                            {% elif is_current %}background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:white;box-shadow:0 0 16px rgba(59,130,246,0.3);
+                            {% else %}background:var(--glass-bg);color:var(--text-muted);border:1px solid var(--border-color);{% endif %}">
+                            {% if is_done %}
+                            <i class="bi bi-check2-all"></i>
+                            {% else %}
+                            <i class="bi {{ step_icon }}"></i>
+                            {% endif %}
+                        </div>
+                        {% if not loop.last %}
+                        <div style="width:2px;flex:1;min-height:32px;margin:4px 0;
+                            background:{% if is_done %}var(--accent-green){% else %}var(--border-color){% endif %};"></div>
+                        {% endif %}
+                    </div>
+                    <div style="padding-bottom:{% if not loop.last %}24px{% else %}0{% endif %};">
+                        <p style="font-size:0.875rem;font-weight:600;margin:6px 0 4px;
+                            color:{% if is_done or is_current %}var(--text-primary){% else %}var(--text-muted){% endif %};">
+                            {{ step_label }}
+                            {% if is_current %}
+                            <span style="font-size:0.65rem;background:rgba(59,130,246,0.15);color:var(--accent-blue);padding:2px 6px;border-radius:99px;margin-left:6px;vertical-align:middle;">Saat ini</span>
+                            {% endif %}
+                        </p>
+                        <p style="font-size:0.75rem;color:var(--text-muted);margin:0;">{{ step_desc }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if complaint.status == 'ditolak' %}
+                <div style="margin-top:12px;padding:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-md);">
+                    <p style="font-size:0.85rem;font-weight:600;color:#f87171;margin:0 0 4px;"><i class="bi bi-x-circle-fill me-1"></i>Ditolak</p>
+                    <p style="font-size:0.78rem;color:var(--text-muted);margin:0;">Pengaduan ini tidak dapat diproses lebih lanjut.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card-glass">
+            <h3 class="section-title"><i class="bi bi-clock-history"></i> Kronologi Perubahan</h3>
+            <ul class="timeline">
+                {% for log in complaint.status_logs | sort(attribute='created_at') %}
+                <li class="timeline-item">
+                    <div class="timeline-dot timeline-dot-{% if log.new_status %}{{ log.new_status }}{% else %}default{% endif %}">
+                        <i class="bi bi-record-fill"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <p class="timeline-date">{{ log.created_at.strftime('%d %b %Y, %H:%M') }}</p>
+                        <p class="timeline-title">
+                            {% if log.new_status == 'menunggu' %}Pengaduan Dibuat
+                            {% elif log.new_status == 'diproses' %}Mulai Diproses
+                            {% elif log.new_status == 'selesai' %}Selesai Ditangani
+                            {% elif log.new_status == 'ditolak' %}Pengaduan Ditolak
+                            {% else %}Status Diperbarui{% endif %}
+                        </p>
+                        {% if log.note %}
+                        <p class="timeline-note">{{ log.note }}</p>
+                        {% endif %}
+                        <p style="font-size:0.7rem;color:var(--text-muted);margin:4px 0 0;">
+                            oleh {{ log.changed_by }}
+                        </p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.attachment-card {
+    display:block;border-radius:var(--radius-md);overflow:hidden;
+    border:1px solid var(--border-color);transition:var(--transition);
+    text-decoration:none;
+}
+.attachment-card:hover { border-color:rgba(59,130,246,0.3);box-shadow:var(--shadow-sm); }
+
+.image-attachment { position:relative; }
+.attachment-img { width:100%;height:120px;object-fit:cover;display:block; }
+.attachment-overlay {
+    position:absolute;inset:0;background:rgba(0,0,0,0.5);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;transition:var(--transition);font-size:1.5rem;color:white;
+}
+.image-attachment:hover .attachment-overlay { opacity:1; }
+.attachment-name {
+    padding:8px 10px;font-size:0.72rem;color:var(--text-muted);
+    background:var(--glass-bg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.doc-attachment {
+    display:flex;align-items:center;gap:10px;
+    padding:12px;background:var(--glass-bg);
+}
+.attachment-doc-icon { font-size:1.5rem;color:var(--accent-orange);flex-shrink:0; }
+.attachment-doc-info { flex:1;min-width:0; }
+.attachment-name-doc { font-size:0.8rem;font-weight:500;color:var(--text-primary);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.attachment-size { font-size:0.7rem;color:var(--text-muted); }
+</style>
+
+<!-- Modal Konfirmasi Hapus -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-glass" style="border:1px solid rgba(239,68,68,0.3);background:var(--navy-800);">
+            <div class="modal-header" style="border-bottom:1px solid var(--border-color);">
+                <h5 class="modal-title" id="deleteModalLabel" style="font-size:1.1rem;display:flex;align-items:center;gap:10px;color:var(--accent-red);">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Konfirmasi Hapus Pengaduan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="font-size:0.9rem;color:var(--text-secondary);padding:24px;">
+                <p>Apakah Anda yakin ingin menghapus pengaduan ini?</p>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:14px;margin-bottom:16px;">
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">NOMOR TIKET</div>
+                    <code style="font-weight:700;color:var(--accent-blue);font-size:0.95rem;">{{ complaint.ticket_number }}</code>
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-top:10px;margin-bottom:4px;">JUDUL</div>
+                    <div style="font-weight:600;color:var(--text-primary);">{{ complaint.title }}</div>
+                </div>
+                <div class="alert alert-danger" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#fca5a5;font-size:0.8rem;margin:0;">
+                    <i class="bi bi-info-circle me-1"></i> Seluruh riwayat status, berkas bukti, dan tanggapan pada pengaduan ini akan dihapus secara permanen.
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border-color);gap:10px;">
+                <button type="button" class="btn-glass" data-bs-dismiss="modal">Batal</button>
+                <form method="POST" action="{{ url_for('complaint.delete_complaint', id=complaint.id) }}" style="margin:0;">
+                    <button type="submit" class="btn-danger-custom" id="confirmDeleteBtn">
+                        <i class="bi bi-trash3-fill"></i> Ya, Hapus Pengaduan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let deleteModalInstance = null;
+function openDeleteModal() {
+    const modalEl = document.getElementById('deleteModal');
+    if (!deleteModalInstance) {
+        deleteModalInstance = new bootstrap.Modal(modalEl);
+    }
+    deleteModalInstance.show();
+}
+
+// ── Live Real-Time Complaint Update Listener ──
+(function() {
+    const complaintId = parseInt("{{ complaint.id }}", 10);
+    const initialStatus = "{{ complaint.status }}";
+    const initialResponsesCount = parseInt("{{ complaint.responses|length }}", 10);
+    const initialLogsCount = parseInt("{{ complaint.status_logs|length }}", 10);
+
+    function checkLiveUpdate() {
+        fetch('/complaints/' + complaintId + '/status-check')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data) return;
+                if (data.status !== initialStatus || data.responses_count !== initialResponsesCount || data.logs_count !== initialLogsCount) {
+                    // Update detected from Admin Panel!
+                    const banner = document.createElement('div');
+                    banner.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1e293b;border:1px solid #3b82f6;color:#e2e8f0;padding:14px 20px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;gap:12px;animation:fadeIn 0.3s ease;';
+                    banner.innerHTML = `
+                        <div style="width:32px;height:32px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;">
+                            <i class="bi bi-bell-fill"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight:600;font-size:13px;color:white;">Tindak Lanjut Baru Diterima!</div>
+                            <div style="font-size:12px;color:#94a3b8;">Admin telah memperbarui status atau memberikan tanggapan.</div>
+                        </div>
+                    `;
+                    document.body.appendChild(banner);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1800);
+                }
+            })
+            .catch(() => {});
+    }
+
+    setInterval(checkLiveUpdate, 6000);
+    window.addEventListener('focus', checkLiveUpdate);
+})();
+</script>
+{% endblock %}

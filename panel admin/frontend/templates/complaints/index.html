@@ -1,0 +1,632 @@
+{% extends 'base.html' %}
+{% block title %}Manajemen Pengaduan{% endblock %}
+{% block page_title %}Manajemen Pengaduan{% endblock %}
+{% block page_subtitle %}Kelola seluruh laporan pengaduan mahasiswa{% endblock %}
+
+{% block content %}
+<!-- Filter Bar -->
+<div class="card-dark mb-4">
+    <form method="GET" action="{{ url_for('complaints.index') }}" class="d-flex flex-wrap align-items-center gap-3">
+        <!-- Search -->
+        <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;
+                    background:var(--bg-secondary);border:1px solid var(--border-color);
+                    border-radius:10px;padding:8px 14px;">
+            <i class="bi bi-search" style="color:var(--text-muted);"></i>
+            <input type="text" name="search" value="{{ current_search or '' }}"
+                   placeholder="Cari judul atau nomor tiket..."
+                   style="background:none;border:none;outline:none;color:var(--text-primary);
+                          font-size:13px;width:100%;font-family:'Inter',sans-serif;">
+        </div>
+        <!-- Status Filter -->
+        <select name="status" style="background:var(--bg-secondary);border:1px solid var(--border-color);
+                       border-radius:10px;padding:8px 14px;color:var(--text-primary);
+                       font-size:13px;outline:none;font-family:'Inter',sans-serif;">
+            <option value="">Semua Status</option>
+            <option value="baru" {% if current_status == 'baru' %}selected{% endif %}>Baru</option>
+            <option value="diproses" {% if current_status == 'diproses' %}selected{% endif %}>Diproses</option>
+            <option value="selesai" {% if current_status == 'selesai' %}selected{% endif %}>Selesai</option>
+            <option value="ditolak" {% if current_status == 'ditolak' %}selected{% endif %}>Ditolak</option>
+        </select>
+        <!-- Kategori Filter -->
+        <select name="category" style="background:var(--bg-secondary);border:1px solid var(--border-color);
+                       border-radius:10px;padding:8px 14px;color:var(--text-primary);
+                       font-size:13px;outline:none;font-family:'Inter',sans-serif;">
+            <option value="">Semua Kategori</option>
+            <option value="akademik" {% if current_category == 'akademik' %}selected{% endif %}>Akademik</option>
+            <option value="dosen" {% if current_category == 'dosen' %}selected{% endif %}>Dosen & Pengajaran</option>
+            <option value="fasilitas" {% if current_category == 'fasilitas' %}selected{% endif %}>Fasilitas & Lab</option>
+            <option value="administrasi" {% if current_category == 'administrasi' %}selected{% endif %}>Administrasi</option>
+            <option value="saran" {% if current_category == 'saran' %}selected{% endif %}>Saran & Kritik</option>
+            <option value="lainnya" {% if current_category == 'lainnya' %}selected{% endif %}>Lainnya</option>
+        </select>
+        <button type="submit" class="btn-ghost"><i class="bi bi-funnel"></i> Filter</button>
+        {% if current_search or current_status or current_category %}
+        <a href="{{ url_for('complaints.index') }}" class="btn-ghost" style="color:var(--accent-red);" title="Reset Filter">
+            <i class="bi bi-x-circle"></i> Reset
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Stats Banner Cards -->
+<div class="row g-3 mb-4">
+    <div class="col">
+        <div class="card-dark d-flex align-items-center gap-3" style="padding:14px 18px;">
+            <div class="stat-icon blue" style="margin:0;width:38px;height:38px;font-size:17px;">
+                <i class="bi bi-collection"></i>
+            </div>
+            <div>
+                <div id="stat-total" style="font-size:22px;font-weight:700;transition:all 0.3s;">{{ stats.total }}</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Total</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card-dark d-flex align-items-center gap-3" style="padding:14px 18px;">
+            <div class="stat-icon purple" style="margin:0;width:38px;height:38px;font-size:17px;">
+                <i class="bi bi-envelope-open"></i>
+            </div>
+            <div>
+                <div id="stat-new" style="font-size:22px;font-weight:700;transition:all 0.3s;">{{ stats.new }}</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Baru</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card-dark d-flex align-items-center gap-3" style="padding:14px 18px;">
+            <div class="stat-icon yellow" style="margin:0;width:38px;height:38px;font-size:17px;">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+                <div id="stat-progress" style="font-size:22px;font-weight:700;transition:all 0.3s;">{{ stats.progress }}</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Diproses</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card-dark d-flex align-items-center gap-3" style="padding:14px 18px;">
+            <div class="stat-icon green" style="margin:0;width:38px;height:38px;font-size:17px;">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div>
+                <div id="stat-resolved" style="font-size:22px;font-weight:700;transition:all 0.3s;">{{ stats.resolved }}</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Selesai</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card-dark d-flex align-items-center gap-3" style="padding:14px 18px;">
+            <div class="stat-icon red" style="margin:0;width:38px;height:38px;font-size:17px;">
+                <i class="bi bi-x-circle"></i>
+            </div>
+            <div>
+                <div id="stat-rejected" style="font-size:22px;font-weight:700;transition:all 0.3s;">{{ stats.rejected }}</div>
+                <div style="font-size:11px;color:var(--text-secondary);">Ditolak</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complaints Table -->
+<div class="card-dark">
+    <div class="card-header-custom">
+        <div>
+            <div class="card-title">Daftar Pengaduan</div>
+            <div class="card-subtitle" id="complaintsSubtitle">{{ stats.total }} total pengaduan terdaftar</div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn-ghost"><i class="bi bi-download"></i> Ekspor</button>
+        </div>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="table-dark-custom" id="complaintsTable">
+            <thead>
+                <tr>
+                    <th style="width:40px;">
+                        <input type="checkbox" id="selectAllCheckbox" class="custom-table-checkbox"
+                               title="Centang Semua Pengaduan">
+                    </th>
+                    <th>No. Tiket</th>
+                    <th>Mahasiswa</th>
+                    <th>Kategori</th>
+                    <th>Judul Pengaduan</th>
+                    <th>Urgensi</th>
+                    <th>Status</th>
+                    <th>Petugas</th>
+                    <th>Tanggal</th>
+                    <th style="min-width:125px;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span>Aksi</span>
+                            <button type="button" id="btnDeleteAllHeader" class="btn-trash-header"
+                                    title="Hapus Semua Pengaduan">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="complaintsTableBody">
+                {% if complaints %}
+                    {% for c in complaints %}
+                    <tr id="row-{{ c.id }}" class="complaint-row" data-id="{{ c.id }}" data-ticket="{{ c.ticket_number }}">
+                        <td>
+                            <input type="checkbox" class="custom-table-checkbox row-checkbox"
+                                   data-id="{{ c.id }}" data-ticket="{{ c.ticket_number }}">
+                        </td>
+                        <td><span style="font-family:monospace;color:var(--accent-blue-light);font-size:12px;font-weight:600;">{{ c.ticket_number }}</span></td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div style="width:30px;height:30px;border-radius:8px;flex-shrink:0;
+                                            background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+                                            display:flex;align-items:center;justify-content:center;
+                                            font-size:12px;font-weight:700;">{{ (c.user.full_name if c.user else 'M')[0] }}</div>
+                                <div>
+                                    <div style="font-size:13px;font-weight:500;">{{ c.user.full_name if c.user else 'Mahasiswa' }}</div>
+                                    <div style="font-size:11px;color:var(--text-muted);">{{ c.user.nim if c.user else '—' }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span style="font-size:12px;color:var(--text-secondary);
+                                         background:var(--bg-secondary);border-radius:6px;
+                                         padding:2px 8px;">{{ c.category_label }}</span></td>
+                        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;" title="{{ c.title }}">{{ c.title }}</td>
+                        <td>
+                            {% if c.status == 'menunggu' %}
+                            <span style="font-size:11px;color:#ef4444;font-weight:600;">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Tinggi</span>
+                            {% elif c.status == 'diproses' %}
+                            <span style="font-size:11px;color:#f59e0b;font-weight:600;">
+                                <i class="bi bi-dash-circle"></i> Sedang</span>
+                            {% else %}
+                            <span style="font-size:11px;color:#6e7681;font-weight:600;">
+                                <i class="bi bi-arrow-down-circle"></i> Rendah</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if c.status == 'menunggu' %}<span class="badge-status badge-new">Baru</span>
+                            {% elif c.status == 'diproses' %}<span class="badge-status badge-progress">Diproses</span>
+                            {% elif c.status == 'selesai' %}<span class="badge-status badge-resolved">Selesai</span>
+                            {% else %}<span class="badge-status badge-rejected">Ditolak</span>{% endif %}
+                        </td>
+                        <td style="font-size:12px;color:var(--text-secondary);">Admin</td>
+                        <td style="font-size:12px;color:var(--text-muted);">{{ c.created_at.strftime('%d %b') if c.created_at else '—' }}</td>
+                        <td>
+                            <div class="d-flex gap-1 align-items-center">
+                                <a href="/complaints/{{ c.id }}" class="topbar-btn" style="width:30px;height:30px;border-radius:7px;"
+                                   title="Lihat Detail">
+                                    <i class="bi bi-eye" style="font-size:13px;"></i>
+                                </a>
+                                <button type="button" class="topbar-btn btn-delete-single"
+                                        data-id="{{ c.id }}"
+                                        data-ticket="{{ c.ticket_number }}"
+                                        data-name="{{ c.user.full_name if c.user else 'Mahasiswa' }}"
+                                        style="width:30px;height:30px;border-radius:7px;color:var(--accent-red);"
+                                        title="Hapus Laporan {{ c.ticket_number }}">
+                                    <i class="bi bi-trash3" style="font-size:13px;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr id="emptyRowPlaceholder">
+                        <td colspan="10" style="text-align:center;padding:48px 20px;color:var(--text-muted);">
+                            <div style="font-size:38px;margin-bottom:12px;opacity:0.6;">📭</div>
+                            <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">
+                                Tidak ada data pengaduan
+                            </div>
+                            <div style="font-size:12px;">Belum ada pengaduan yang terdaftar atau semua data telah dihapus permanen.</div>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Pagination -->
+    <div style="display:flex;align-items:center;justify-content:between;padding:16px 0 0;
+                border-top:1px solid var(--border-color);margin-top:12px;">
+        <span id="paginationInfo" style="font-size:12px;color:var(--text-muted);flex:1;">
+            Menampilkan {{ complaints|length }} dari {{ stats.total }} pengaduan
+        </span>
+        <div class="d-flex gap-1">
+            <button style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border-color);
+                           background:var(--accent-blue);color:white;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;">1</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Mock-up -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content" style="background: var(--bg-card); border: 1px solid rgba(239, 68, 68, 0.45); border-radius: 18px; box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 35px rgba(239, 68, 68, 0.2); overflow: hidden;">
+            <div class="modal-body text-center p-4">
+                <!-- Glowing Warning Icon -->
+                <div style="width: 68px; height: 68px; border-radius: 50%;
+                            background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.4);
+                            display: flex; align-items: center; justify-content: center;
+                            margin: 4px auto 18px; box-shadow: 0 0 24px rgba(239, 68, 68, 0.25);">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 30px; color: var(--accent-red);"></i>
+                </div>
+
+                <h5 id="deleteModalLabel" style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 14px;">
+                    Konfirmasi Hapus Pengaduan
+                </h5>
+
+                <!-- Peringatan Persis Sesuai Permintaan -->
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35);
+                            border-left: 4px solid var(--accent-red); border-radius: 10px;
+                            padding: 14px 16px; margin-bottom: 18px; text-align: left;">
+                    <div style="font-size: 13.5px; color: #fca5a5; font-weight: 500; line-height: 1.5;">
+                        <i class="bi bi-shield-fill-x me-1 text-danger"></i>
+                        bahwa data yang sudah di hapus tidak akan bisa di kembalikan lagi,anda yakin ingin hapus?
+                    </div>
+                </div>
+
+                <div id="deleteTargetDesc" style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 24px;">
+                    Aksi ini akan menghapus seluruh data pengaduan yang dipilih secara permanen dari sistem.
+                </div>
+
+                <!-- 2 Fitur: Batal dan Hapus -->
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn" data-bs-dismiss="modal"
+                            style="flex: 1; padding: 11px 18px; border-radius: 10px;
+                                   background: var(--bg-secondary); border: 1px solid var(--border-color);
+                                   color: var(--text-secondary); font-weight: 600; font-size: 14px;
+                                   transition: all 0.2s;">
+                        <i class="bi bi-x-circle me-1"></i> Batal
+                    </button>
+                    <button type="button" id="btnConfirmDelete"
+                            style="flex: 1; padding: 11px 18px; border-radius: 10px;
+                                   background: linear-gradient(135deg, #ef4444, #dc2626); border: none;
+                                   color: white; font-weight: 600; font-size: 14px;
+                                   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+                                   transition: all 0.2s; cursor: pointer;">
+                        <i class="bi bi-trash3-fill me-1"></i> Hapus
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Feedback -->
+<div id="deleteToast" style="position:fixed;bottom:24px;right:24px;z-index:9999;
+                             background:var(--bg-card);border:1px solid #10b981;
+                             border-radius:12px;padding:12px 18px;display:none;
+                             align-items:center;gap:10px;box-shadow:0 10px 25px rgba(0,0,0,0.5);
+                             animation:slideInUp 0.3s ease;">
+    <i class="bi bi-check-circle-fill" style="color:#10b981;font-size:18px;"></i>
+    <span id="deleteToastMsg" style="font-size:13px;color:var(--text-primary);font-weight:500;">
+        Data pengaduan berhasil dihapus permanen!
+    </span>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .custom-table-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--accent-blue);
+        border-radius: 4px;
+        vertical-align: middle;
+        transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .custom-table-checkbox:hover {
+        transform: scale(1.15);
+        filter: brightness(1.2);
+    }
+    .btn-trash-header {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: var(--accent-red);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+        margin-left: 8px;
+    }
+    .btn-trash-header:hover {
+        background: var(--accent-red);
+        color: #ffffff;
+        border-color: var(--accent-red);
+        transform: scale(1.1);
+        box-shadow: 0 0 14px rgba(239, 68, 68, 0.5);
+    }
+    .btn-delete-single:hover {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #f87171 !important;
+        border-color: rgba(239, 68, 68, 0.4) !important;
+        transform: scale(1.08);
+    }
+    .complaint-row.selected td {
+        background: rgba(37, 99, 235, 0.08) !important;
+    }
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const btnDeleteAllHeader = document.getElementById('btnDeleteAllHeader');
+    const deleteConfirmModalEl = document.getElementById('deleteConfirmModal');
+    const deleteModal = new bootstrap.Modal(deleteConfirmModalEl);
+    const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+    const deleteTargetDesc = document.getElementById('deleteTargetDesc');
+    const paginationInfo = document.getElementById('paginationInfo');
+    const deleteToast = document.getElementById('deleteToast');
+    const deleteToastMsg = document.getElementById('deleteToastMsg');
+    const complaintsSubtitle = document.getElementById('complaintsSubtitle');
+
+    let deleteMode = 'all'; // 'all', 'selected', 'single'
+    let singleTargetId = null;
+    let singleTargetTicket = null;
+
+    // ── 1. Centang Semua dalam 1 Kali Klik ────────
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function () {
+            const isChecked = this.checked;
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+                const row = cb.closest('tr');
+                if (row) {
+                    if (isChecked) row.classList.add('selected');
+                    else row.classList.remove('selected');
+                }
+            });
+            updateDeleteAllButtonState();
+        });
+    }
+
+    // Centang per-baris
+    function bindRowCheckboxes() {
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            cb.addEventListener('change', function () {
+                const row = this.closest('tr');
+                if (row) {
+                    if (this.checked) row.classList.add('selected');
+                    else row.classList.remove('selected');
+                }
+                syncSelectAllState();
+                updateDeleteAllButtonState();
+            });
+        });
+    }
+    bindRowCheckboxes();
+
+    function syncSelectAllState() {
+        const total = document.querySelectorAll('.row-checkbox').length;
+        const checked = document.querySelectorAll('.row-checkbox:checked').length;
+        if (!selectAllCheckbox) return;
+
+        if (total === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checked === total) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checked > 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
+    }
+
+    function updateDeleteAllButtonState() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        if (checkedCount > 0) {
+            btnDeleteAllHeader.style.background = 'var(--accent-red)';
+            btnDeleteAllHeader.style.color = '#ffffff';
+            btnDeleteAllHeader.title = `Hapus ${checkedCount} pengaduan yang dicentang secara permanen`;
+        } else {
+            btnDeleteAllHeader.style.background = 'rgba(239, 68, 68, 0.12)';
+            btnDeleteAllHeader.style.color = 'var(--accent-red)';
+            btnDeleteAllHeader.title = 'Hapus Semua Pengaduan Permanen';
+        }
+    }
+
+    // ── 2. Klik Tong Sampah Header (Hapus Semua / Terpilih) ──────
+    if (btnDeleteAllHeader) {
+        btnDeleteAllHeader.addEventListener('click', function () {
+            const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+            const totalRows = document.querySelectorAll('.complaint-row').length;
+
+            if (totalRows === 0) {
+                showToast('Tidak ada data pengaduan untuk dihapus.', 'info');
+                return;
+            }
+
+            deleteMode = checkedCount > 0 ? 'selected' : 'all';
+            singleTargetId = null;
+            singleTargetTicket = null;
+
+            if (deleteMode === 'selected') {
+                deleteTargetDesc.innerHTML = `Aksi ini akan menghapus <strong>${checkedCount} pengaduan yang dicentang</strong> secara permanen dari database.`;
+            } else {
+                deleteTargetDesc.innerHTML = `Aksi ini akan menghapus <strong>seluruh data pengaduan (${totalRows} data)</strong> secara permanen dari database. Jumlah banner akan menjadi 0.`;
+            }
+
+            deleteModal.show();
+        });
+    }
+
+    // ── 3. Klik Tong Sampah Baris ────────────────────────────────
+    function bindSingleDeleteButtons() {
+        document.querySelectorAll('.btn-delete-single').forEach(btn => {
+            btn.addEventListener('click', function () {
+                deleteMode = 'single';
+                singleTargetId = this.getAttribute('data-id');
+                singleTargetTicket = this.getAttribute('data-ticket');
+                const studentName = this.getAttribute('data-name') || '';
+
+                deleteTargetDesc.innerHTML = `Aksi ini akan menghapus pengaduan nomor tiket <strong>${singleTargetTicket}</strong> atas nama <strong>${studentName}</strong> secara permanen dari database.`;
+                deleteModal.show();
+            });
+        });
+    }
+    bindSingleDeleteButtons();
+
+    // ── 4. Eksekusi Hapus Permanen ke Database ────────────────────
+    if (btnConfirmDelete) {
+        btnConfirmDelete.addEventListener('click', async function () {
+            deleteModal.hide();
+            btnConfirmDelete.disabled = true;
+
+            try {
+                let response, result;
+
+                if (deleteMode === 'single') {
+                    response = await fetch(`/complaints/${singleTargetId}/delete`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    result = await response.json();
+
+                    if (result.success) {
+                        const row = document.getElementById(`row-${singleTargetId}`);
+                        if (row) animateRemoveRow(row);
+                        updateStatsDisplay(result.stats);
+                        showToast(result.message || `Pengaduan ${singleTargetTicket} berhasil dihapus permanen!`, 'success');
+                    } else {
+                        showToast(result.message || 'Gagal menghapus pengaduan.', 'error');
+                    }
+                } else {
+                    // Bulk or All
+                    let ids = 'all';
+                    if (deleteMode === 'selected') {
+                        ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.getAttribute('data-id')));
+                    }
+
+                    response = await fetch('/complaints/delete-bulk', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids: ids })
+                    });
+                    result = await response.json();
+
+                    if (result.success) {
+                        if (ids === 'all') {
+                            document.querySelectorAll('.complaint-row').forEach(row => animateRemoveRow(row));
+                        } else {
+                            ids.forEach(id => {
+                                const row = document.getElementById(`row-${id}`);
+                                if (row) animateRemoveRow(row);
+                            });
+                        }
+                        updateStatsDisplay(result.stats);
+                        showToast(result.message || 'Data pengaduan berhasil dihapus permanen!', 'success');
+                    } else {
+                        showToast(result.message || 'Gagal menghapus pengaduan.', 'error');
+                    }
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+                showToast('Terjadi kesalahan saat menghapus data ke database.', 'error');
+            } finally {
+                btnConfirmDelete.disabled = false;
+            }
+        });
+    }
+
+    function animateRemoveRow(row) {
+        row.style.transition = 'all 0.35s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(24px)';
+        setTimeout(() => {
+            row.remove();
+            checkEmptyState();
+        }, 350);
+    }
+
+    function updateStatsDisplay(stats) {
+        if (!stats) return;
+        const totalEl = document.getElementById('stat-total');
+        const newEl = document.getElementById('stat-new');
+        const progressEl = document.getElementById('stat-progress');
+        const resolvedEl = document.getElementById('stat-resolved');
+        const rejectedEl = document.getElementById('stat-rejected');
+
+        if (totalEl) totalEl.textContent = stats.total;
+        if (newEl) newEl.textContent = stats.new;
+        if (progressEl) progressEl.textContent = stats.progress;
+        if (resolvedEl) resolvedEl.textContent = stats.resolved;
+        if (rejectedEl) rejectedEl.textContent = stats.rejected;
+
+        if (complaintsSubtitle) {
+            complaintsSubtitle.textContent = `${stats.total} total pengaduan terdaftar`;
+        }
+
+        const remainingRows = document.querySelectorAll('.complaint-row').length;
+        if (paginationInfo) {
+            paginationInfo.textContent = `Menampilkan ${remainingRows} dari ${stats.total} pengaduan`;
+        }
+
+        syncSelectAllState();
+        updateDeleteAllButtonState();
+    }
+
+    function checkEmptyState() {
+        const tbody = document.getElementById('complaintsTableBody');
+        const remainingRows = tbody.querySelectorAll('.complaint-row').length;
+
+        if (remainingRows === 0) {
+            tbody.innerHTML = `
+                <tr id="emptyRowPlaceholder">
+                    <td colspan="10" style="text-align:center;padding:48px 20px;color:var(--text-muted);">
+                        <div style="font-size:38px;margin-bottom:12px;opacity:0.6;">📭</div>
+                        <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">
+                            Tidak ada data pengaduan
+                        </div>
+                        <div style="font-size:12px;">Semua data pengaduan telah dihapus permanen dari database.</div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // ── 5. Polling Data Terbaru Otomatis ─────────────────────────
+    // Bila mahasiswa mengirim laporan baru dari portal, angka banner otomatis bertambah!
+    async function syncRealtimeStats() {
+        try {
+            const res = await fetch('/complaints/stats');
+            if (res.ok) {
+                const data = await res.json();
+                updateStatsDisplay(data);
+            }
+        } catch (e) {}
+    }
+
+    // Poll setiap 10 detik & saat tab aktif
+    setInterval(syncRealtimeStats, 10000);
+    window.addEventListener('focus', syncRealtimeStats);
+
+    function showToast(msg, type = 'success') {
+        if (!deleteToast) return;
+        deleteToastMsg.textContent = msg;
+        deleteToast.style.display = 'flex';
+        deleteToast.style.borderColor = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#3b82f6');
+        setTimeout(() => {
+            deleteToast.style.transition = 'opacity 0.4s ease';
+            deleteToast.style.opacity = '0';
+            setTimeout(() => {
+                deleteToast.style.display = 'none';
+                deleteToast.style.opacity = '1';
+            }, 400);
+        }, 3400);
+    }
+});
+</script>
+{% endblock %}

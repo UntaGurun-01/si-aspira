@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% block title %}Buat Pengaduan Baru - SI Pengaduan{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('dashboard.index') }}" style="color:var(--text-muted);font-size:0.85rem;">Dashboard</a>
+<i class="bi bi-chevron-right mx-2" style="font-size:0.7rem;color:var(--text-muted);"></i>
+<span class="breadcrumb-item-text">Buat Pengaduan</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-plus-circle-fill me-3" style="color:var(--accent-blue);"></i>Buat Pengaduan Baru</h1>
+    <p class="page-subtitle">Sampaikan masalahmu dengan jelas agar dapat ditindaklanjuti dengan cepat</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form method="POST" action="{{ url_for('complaint.create_complaint') }}"
+              enctype="multipart/form-data" id="complaintForm">
+
+            <!-- Step 1: Basic Info -->
+            <div class="card-glass mb-4">
+                <div class="section-header-form">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 style="font-size:1rem;font-weight:700;margin:0;">Informasi Pengaduan</h3>
+                        <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">Judul dan deskripsi masalah</p>
+                    </div>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label class="form-label-custom" for="title">
+                        Judul Pengaduan <span style="color:var(--accent-red);">*</span>
+                    </label>
+                    <input type="text" id="title" name="title" class="form-glass"
+                        placeholder="Ringkasan singkat masalah yang ingin dilaporkan"
+                        maxlength="200" required>
+                    <p style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;">
+                        Buat judul yang jelas dan spesifik (maks. 200 karakter)
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label-custom" for="description">
+                        Deskripsi Masalah <span style="color:var(--accent-red);">*</span>
+                    </label>
+                    <textarea id="description" name="description" class="form-glass"
+                        style="min-height:160px;"
+                        placeholder="Jelaskan masalah secara detail: kapan terjadi, di mana, apa dampaknya, dan apa yang sudah dilakukan..."
+                        required></textarea>
+                    <div style="display:flex;justify-content:space-between;margin-top:6px;">
+                        <p style="font-size:0.72rem;color:var(--text-muted);margin:0;">
+                            Minimal 20 karakter. Semakin detail semakin baik.
+                        </p>
+                        <span id="charCounter" style="font-size:0.72rem;color:var(--text-muted);">0 karakter</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Category -->
+            <div class="card-glass mb-4">
+                <div class="section-header-form">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 style="font-size:1rem;font-weight:700;margin:0;">Kategori Pengaduan</h3>
+                        <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">Pilih kategori yang paling sesuai</p>
+                    </div>
+                </div>
+
+                <div class="category-grid mt-4">
+                    {% set categories_list = [
+                        ('akademik', 'Akademik', 'bi-book-fill', 'Jadwal kuliah, KRS, nilai, perkuliahan'),
+                        ('dosen', 'Dosen & Pengajaran', 'bi-person-video3', 'Proses pembelajaran dan komunikasi'),
+                        ('fasilitas', 'Fasilitas', 'bi-building', 'Ruang kelas, sarana kampus'),
+                        ('laboratorium', 'Laboratorium', 'bi-cpu-fill', 'Komputer, jaringan, perangkat lab'),
+                        ('administrasi', 'Administrasi', 'bi-file-earmark-text-fill', 'Dokumen, surat, layanan prodi'),
+                        ('saran', 'Saran & Kritik', 'bi-lightbulb-fill', 'Masukan untuk peningkatan prodi'),
+                        ('lainnya', 'Lainnya', 'bi-question-circle-fill', 'Masalah yang belum termasuk kategori lain'),
+                    ] %}
+                    {% for value, label, icon, desc in categories_list %}
+                    <label class="category-card-option" for="cat_{{ value }}">
+                        <input type="radio" id="cat_{{ value }}" name="category" value="{{ value }}" required {% if request.args.get('category') == value %}checked{% endif %}>
+                        <i class="bi {{ icon }} category-card-icon" style="color:var(--accent-blue);"></i>
+                        <div class="category-card-label">{{ label }}</div>
+                        <div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;line-height:1.4;">{{ desc }}</div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Step 3: Attachments -->
+            <div class="card-glass mb-4">
+                <div class="section-header-form">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3 style="font-size:1rem;font-weight:700;margin:0;">Lampiran Bukti <span style="font-weight:400;color:var(--text-muted);font-size:0.85rem;">(Opsional)</span></h3>
+                        <p style="font-size:0.8rem;color:var(--text-muted);margin:0;">Foto, screenshot, atau dokumen pendukung</p>
+                    </div>
+                </div>
+
+                <div class="upload-area mt-4" id="uploadArea">
+                    <i class="bi bi-cloud-upload-fill upload-icon"></i>
+                    <p class="upload-text">
+                        <strong>Klik untuk memilih file</strong> atau seret & lepas di sini
+                    </p>
+                    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">
+                        Format: JPG, PNG, PDF, DOC · Maks. 10MB per file
+                    </p>
+                </div>
+                <input type="file" id="attachmentInput" name="attachments" multiple
+                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx" style="display:none;">
+                <div id="filePreviewList" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+
+            <!-- Submit -->
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                <button type="submit" class="btn-primary-custom" id="submitBtn">
+                    <i class="bi bi-send-fill"></i>
+                    Kirim Pengaduan
+                </button>
+                <a href="{{ url_for('dashboard.index') }}" class="btn-glass">
+                    <i class="bi bi-x-circle"></i>
+                    Batal
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tips Panel -->
+    <div class="col-lg-4">
+        <!-- Nomor Tiket Info -->
+        <div class="card-glass mb-3" style="background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.15);">
+            <div style="display:flex;align-items:flex-start;gap:12px;">
+                <i class="bi bi-ticket-perforated-fill" style="font-size:1.5rem;color:var(--accent-green);flex-shrink:0;"></i>
+                <div>
+                    <p style="font-size:0.85rem;font-weight:600;color:var(--text-primary);margin:0 0 6px;">Nomor Tiket Otomatis</p>
+                    <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;line-height:1.6;">
+                        Setiap pengaduan akan mendapat nomor tiket unik (contoh: <code style="color:var(--accent-green);">TKT-20241013-A1B2</code>) untuk memudahkan pelacakan.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="card-glass mb-3">
+            <h4 class="section-title"><i class="bi bi-lightbulb-fill" style="color:var(--accent-orange);"></i> Tips Pengaduan Efektif</h4>
+            <ul style="padding-left:20px;font-size:0.82rem;color:var(--text-secondary);line-height:1.8;margin:0;">
+                <li>Buat judul yang singkat namun jelas</li>
+                <li>Jelaskan kapan dan di mana masalah terjadi</li>
+                <li>Sertakan nama dosen/matkul jika relevan</li>
+                <li>Lampirkan bukti foto atau dokumen</li>
+                <li>Pastikan informasi yang disampaikan akurat</li>
+            </ul>
+        </div>
+
+        <!-- SLA Info -->
+        <div class="card-glass">
+            <h4 class="section-title"><i class="bi bi-clock-fill"></i> Waktu Penanganan</h4>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;padding:10px 12px;background:var(--glass-bg);border-radius:var(--radius-sm);">
+                    <span style="color:var(--text-secondary);">⚡ Fasilitas & Lab</span>
+                    <span style="color:var(--accent-cyan);font-weight:600;">1–2 Hari</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;padding:10px 12px;background:var(--glass-bg);border-radius:var(--radius-sm);">
+                    <span style="color:var(--text-secondary);">📚 Akademik</span>
+                    <span style="color:var(--accent-blue);font-weight:600;">2–3 Hari</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;padding:10px 12px;background:var(--glass-bg);border-radius:var(--radius-sm);">
+                    <span style="color:var(--text-secondary);">📄 Administrasi</span>
+                    <span style="color:var(--accent-orange);font-weight:600;">3–5 Hari</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="confirm-modal-overlay" id="confirmModal">
+    <div class="confirm-modal">
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="width:60px;height:60px;background:rgba(59,130,246,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.5rem;">
+                <i class="bi bi-send-fill" style="color:var(--accent-blue);"></i>
+            </div>
+            <h3 style="font-size:1.2rem;margin:0 0 8px;">Konfirmasi Pengiriman</h3>
+            <p style="font-size:0.875rem;color:var(--text-muted);margin:0;">Apakah data pengaduan sudah benar?</p>
+        </div>
+
+        <div style="background:var(--glass-bg);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:16px;margin-bottom:20px;">
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Judul Pengaduan</div>
+            <div style="font-size:0.9rem;font-weight:600;color:var(--text-primary);" id="previewTitle">—</div>
+            <hr style="border-color:var(--border-color);margin:12px 0;">
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;">Kategori</div>
+            <div style="font-size:0.875rem;color:var(--text-secondary);" id="previewCategory">—</div>
+        </div>
+
+        <div style="font-size:0.8rem;color:var(--text-muted);text-align:center;margin-bottom:20px;">
+            <i class="bi bi-info-circle me-1"></i>
+            Setelah dikirim, pengaduan tidak dapat diedit
+        </div>
+
+        <div style="display:flex;gap:12px;">
+            <button id="cancelConfirmBtn" class="btn-glass" style="flex:1;justify-content:center;">
+                <i class="bi bi-pencil"></i> Edit Lagi
+            </button>
+            <button id="confirmSubmitBtn" class="btn-primary-custom" style="flex:1;justify-content:center;">
+                <i class="bi bi-send-fill"></i> Kirim Sekarang
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-header-form {
+    display:flex;align-items:center;gap:16px;
+    padding-bottom:16px;border-bottom:1px solid var(--border-color);
+}
+.step-number {
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.875rem;font-weight:700;color:white;flex-shrink:0;
+}
+.file-preview-item {
+    display:flex;align-items:center;gap:12px;
+    padding:10px 14px;border-radius:var(--radius-md);
+    border:1px solid var(--border-color);background:var(--glass-bg);
+}
+.file-icon {
+    width:38px;height:38px;border-radius:var(--radius-sm);
+    display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;
+}
+.file-icon-image { background:rgba(59,130,246,0.15);color:var(--accent-blue); }
+.file-icon-doc { background:rgba(245,158,11,0.15);color:var(--accent-orange); }
+.file-thumb { width:38px;height:38px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0; }
+.file-info { flex:1;min-width:0; }
+.file-name { font-size:0.82rem;font-weight:500;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block; }
+.file-size { font-size:0.72rem;color:var(--text-muted); }
+.file-remove-btn {
+    background:rgba(239,68,68,0.1);border:none;color:#f87171;
+    width:28px;height:28px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:var(--transition);flex-shrink:0;
+}
+.file-remove-btn:hover { background:rgba(239,68,68,0.2); }
+</style>
+{% endblock %}

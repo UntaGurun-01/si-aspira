@@ -1,0 +1,16 @@
+@echo off
+title Panel Admin - Si ASPIRA (PORT 5001)
+echo ========================================================
+echo   Si ASPIRA - PANEL ADMIN (PORT 5001)
+echo ========================================================
+echo.
+echo Akun Demo Admin:
+echo   Username : admin
+echo   Password : admin123
+echo.
+echo Memulai server Panel Admin di http://localhost:5001 ...
+echo Buka di browser: http://localhost:5001/auth/login
+echo.
+cd /d "%~dp0panel admin"
+python app.py
+pause

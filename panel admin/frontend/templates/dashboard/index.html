@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+{% block page_subtitle %}Ringkasan kondisi pengaduan mahasiswa{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <!-- Total -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card blue">
+            <div class="stat-icon blue"><i class="bi bi-collection"></i></div>
+            <div class="stat-value" id="dash-stat-total">{{ stats.total }}</div>
+            <div class="stat-label">Total Pengaduan</div>
+            <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>12% bulan ini</div>
+        </div>
+    </div>
+    <!-- Baru -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card purple">
+            <div class="stat-icon purple"><i class="bi bi-envelope-open"></i></div>
+            <div class="stat-value" id="dash-stat-new">{{ stats.new }}</div>
+            <div class="stat-label">Pengaduan Baru</div>
+            <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>Realtime</div>
+        </div>
+    </div>
+    <!-- Diproses -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card yellow">
+            <div class="stat-icon yellow"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-value" id="dash-stat-progress">{{ stats.in_progress }}</div>
+            <div class="stat-label">Sedang Diproses</div>
+            <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>Aktif</div>
+        </div>
+    </div>
+    <!-- Selesai -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card green">
+            <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value" id="dash-stat-resolved">{{ stats.resolved }}</div>
+            <div class="stat-label">Selesai</div>
+            <div class="stat-change up"><i class="bi bi-arrow-up-short"></i>Selesai</div>
+        </div>
+    </div>
+    <!-- Ditolak -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card red">
+            <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+            <div class="stat-value" id="dash-stat-rejected">{{ stats.rejected }}</div>
+            <div class="stat-label">Ditolak</div>
+            <div class="stat-change down"><i class="bi bi-arrow-down-short"></i>Ditolak</div>
+        </div>
+    </div>
+    <!-- Avg Time -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="stat-card" style="border-color:rgba(6,182,212,0.3)">
+            <div class="stat-icon cyan"><i class="bi bi-clock-history"></i></div>
+            <div class="stat-value">2.4<span style="font-size:14px;font-weight:500;color:var(--text-secondary)">hr</span></div>
+            <div class="stat-label">Avg. Waktu Proses</div>
+            <div class="stat-change up"><i class="bi bi-arrow-down-short"></i>Lebih cepat</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts + Table Row -->
+<div class="row g-3 mb-4">
+    <!-- Line Chart -->
+    <div class="col-xl-8">
+        <div class="card-dark" style="height:320px;">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Tren Pengaduan</div>
+                    <div class="card-subtitle">Jumlah pengaduan per bulan (2024)</div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-ghost py-1 px-2" style="font-size:11px;">Bulanan</button>
+                    <button class="btn-ghost py-1 px-2" style="font-size:11px;opacity:0.5;">Mingguan</button>
+                </div>
+            </div>
+            <canvas id="trendChart" style="max-height:230px;"></canvas>
+        </div>
+    </div>
+    <!-- Donut Chart -->
+    <div class="col-xl-4">
+        <div class="card-dark" style="height:320px;">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Kategori Pengaduan</div>
+                    <div class="card-subtitle">Distribusi jenis laporan</div>
+                </div>
+            </div>
+            <canvas id="categoryChart" style="max-height:200px;margin:0 auto;display:block;"></canvas>
+            <div class="d-flex flex-wrap gap-2 mt-2" id="cat-legend"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Complaints -->
+<div class="row g-3">
+    <div class="col-xl-8">
+        <div class="card-dark">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Pengaduan Terbaru</div>
+                    <div class="card-subtitle">Laporan yang baru masuk</div>
+                </div>
+                <a href="/complaints" class="btn-ghost">Lihat Semua <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="table-dark-custom" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>#Tiket</th>
+                            <th>Mahasiswa</th>
+                            <th>Kategori</th>
+                            <th>Judul</th>
+                            <th>Status</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_complaints %}
+                        {% for c in recent_complaints %}
+                        <tr onclick="window.location.href='/complaints/{{ c.id }}'" style="cursor:pointer;"
+                            onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+                            <td><span style="font-family:monospace;color:var(--accent-blue-light);font-size:12px;font-weight:600;">#{{ c.ticket_number }}</span></td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div style="width:28px;height:28px;border-radius:8px;
+                                                background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+                                                display:flex;align-items:center;justify-content:center;
+                                                font-size:11px;font-weight:700;flex-shrink:0;color:white;">
+                                        {{ (c.user.full_name or c.user.username or '?')[0]|upper if c.user else '?' }}</div>
+                                    <span style="font-size:13px;">{{ c.user.full_name or c.user.username if c.user else 'Unknown' }}</span>
+                                </div>
+                            </td>
+                            <td><span style="font-size:12px;color:var(--text-secondary);">{{ c.category|capitalize }}</span></td>
+                            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">{{ c.title }}</td>
+                            <td>
+                                {% if c.status == 'menunggu' %}<span class="badge-status badge-new">Baru</span>
+                                {% elif c.status == 'diproses' %}<span class="badge-status badge-progress">Diproses</span>
+                                {% elif c.status == 'selesai' %}<span class="badge-status badge-resolved">Selesai</span>
+                                {% else %}<span class="badge-status badge-rejected">Ditolak</span>{% endif %}
+                            </td>
+                            <td style="font-size:12px;color:var(--text-muted);">{{ c.created_at.strftime('%d %b %Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted);">
+                                <i class="bi bi-inbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+                                Belum ada pengaduan
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Priority + Activity -->
+    <div class="col-xl-4 d-flex flex-column gap-3">
+        <!-- Priority -->
+        <div class="card-dark">
+            <div class="card-header-custom">
+                <div class="card-title">Pengaduan Prioritas</div>
+                {% if priority_complaints %}
+                <span class="badge-status badge-new">{{ priority_complaints|length }} urgent</span>
+                {% endif %}
+            </div>
+            {% if priority_complaints %}
+            {% for c in priority_complaints %}
+            {% set color = 'red' if c.status == 'menunggu' else 'yellow' %}
+            {% set lvl = 'Menunggu' if c.status == 'menunggu' else 'Diproses' %}
+            <div onclick="window.location.href='/complaints/{{ c.id }}'"
+                 style="display:flex;align-items:center;gap:10px;padding:8px 0;
+                        border-bottom:1px solid rgba(48,54,61,0.5);cursor:pointer;"
+                 onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;
+                            background:var(--accent-{{ color }});"></div>
+                <div style="flex:1;overflow:hidden;">
+                    <div style="font-size:12px;font-weight:500;white-space:nowrap;
+                                overflow:hidden;text-overflow:ellipsis;">{{ c.title }}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">{{ c.ticket_number }}</div>
+                </div>
+                <span class="badge-status {% if c.status == 'menunggu' %}badge-new{% else %}badge-progress{% endif %}"
+                      style="font-size:10px;padding:2px 7px;">{{ lvl }}</span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">
+                <i class="bi bi-check-circle" style="font-size:20px;display:block;margin-bottom:6px;color:var(--accent-green);"></i>
+                Tidak ada pengaduan prioritas
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card-dark">
+            <div class="card-header-custom">
+                <div class="card-title">Aksi Cepat</div>
+            </div>
+            <div class="d-flex flex-column gap-2">
+                <a href="/complaints" class="btn-ghost" style="justify-content:start;">
+                    <i class="bi bi-file-earmark-text" style="color:var(--accent-blue-light);"></i>
+                    Kelola Semua Pengaduan
+                </a>
+                <a href="/users" class="btn-ghost" style="justify-content:start;">
+                    <i class="bi bi-people" style="color:var(--accent-green);"></i>
+                    Manajemen Pengguna
+                </a>
+                <a href="/reports" class="btn-ghost" style="justify-content:start;">
+                    <i class="bi bi-bar-chart-line" style="color:var(--accent-yellow);"></i>
+                    Ekspor Laporan
+                </a>
+                <a href="/settings" class="btn-ghost" style="justify-content:start;">
+                    <i class="bi bi-gear" style="color:var(--text-secondary);"></i>
+                    Pengaturan Sistem
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Embed server data safely as JSON to avoid JS lint errors -->
+<script id="dashboard-data" type="application/json">
+{
+  "months": {{ months | tojson }},
+  "trendPengaduan": {{ trend_pengaduan | tojson }},
+  "trendSelesai": {{ trend_selesai | tojson }},
+  "categoryCounts": {{ category_counts | tojson }}
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Parse embedded server data
+const dashData = JSON.parse(document.getElementById('dashboard-data').textContent);
+
+const chartDefaults = {
+    color: '#8b949e',
+    font: { family: 'Inter', size: 12 }
+};
+Chart.defaults.color = chartDefaults.color;
+Chart.defaults.font.family = chartDefaults.font.family;
+Chart.defaults.font.size = chartDefaults.font.size;
+
+// Trend Chart — data from real DB
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+const gradient = trendCtx.createLinearGradient(0, 0, 0, 220);
+gradient.addColorStop(0, 'rgba(37, 99, 235, 0.3)');
+gradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+
+const trendLabels = dashData.months;
+const trendPengaduan = dashData.trendPengaduan;
+const trendSelesai = dashData.trendSelesai;
+
+new Chart(trendCtx, {
+    type: 'line',
+    data: {
+        labels: trendLabels,
+        datasets: [{
+            label: 'Pengaduan',
+            data: trendPengaduan,
+            borderColor: '#2563eb',
+            backgroundColor: gradient,
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#2563eb',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+        },{
+            label: 'Selesai',
+            data: trendSelesai,
+            borderColor: '#10b981',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            fill: false,
+            tension: 0.4,
+            pointBackgroundColor: '#10b981',
+            pointRadius: 3,
+            pointHoverRadius: 5,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                align: 'end',
+                labels: { boxWidth: 12, padding: 16, usePointStyle: true }
+            },
+            tooltip: {
+                backgroundColor: '#1c2128',
+                borderColor: '#30363d',
+                borderWidth: 1,
+                titleColor: '#e6edf3',
+                bodyColor: '#8b949e',
+                padding: 10,
+            }
+        },
+        scales: {
+            x: { grid: { color: 'rgba(48,54,61,0.5)' }, border: { display: false } },
+            y: { grid: { color: 'rgba(48,54,61,0.5)' }, border: { display: false }, beginAtZero: true }
+        }
+    }
+});
+
+// Category Donut Chart — data from real DB
+const catCtx = document.getElementById('categoryChart').getContext('2d');
+const rawCatCounts = dashData.categoryCounts;
+const catColors = ['#2563eb', '#7c3aed', '#f59e0b', '#10b981', '#06b6d4', '#6e7681'];
+const catLabels = Object.keys(rawCatCounts);
+const catValues = Object.values(rawCatCounts);
+const totalCat = catValues.reduce((a,b)=>a+b,0);
+
+// If all zero, show empty state placeholder so the chart doesn't show stale data
+const catData = {
+    labels: catLabels,
+    values: totalCat > 0 ? catValues : [1],
+    colors: totalCat > 0 ? catColors.slice(0, catLabels.length) : ['#30363d']
+};
+
+new Chart(catCtx, {
+    type: 'doughnut',
+    data: {
+        labels: totalCat > 0 ? catData.labels : ['Tidak ada data'],
+        datasets: [{
+            data: catData.values,
+            backgroundColor: catData.colors,
+            borderColor: '#1c2128',
+            borderWidth: 3,
+            hoverOffset: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1c2128',
+                borderColor: '#30363d',
+                borderWidth: 1,
+                titleColor: '#e6edf3',
+                bodyColor: '#8b949e',
+            }
+        }
+    }
+});
+
+// Custom legend
+const legend = document.getElementById('cat-legend');
+if (totalCat > 0) {
+    catLabels.forEach((label, i) => {
+        legend.innerHTML += `
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);">
+                <div style="width:8px;height:8px;border-radius:2px;background:${catColors[i]};flex-shrink:0;"></div>
+                ${label} (${catValues[i]})
+            </div>`;
+    });
+} else {
+    legend.innerHTML = '<div style="font-size:11px;color:var(--text-muted);">Belum ada data kategori</div>';
+}
+
+// ── Real-time Dashboard Stats Polling ─────────────────────
+async function syncDashboardRealtime() {
+    try {
+        const res = await fetch('/complaints/stats');
+        if (res.ok) {
+            const data = await res.json();
+            const totalEl = document.getElementById('dash-stat-total');
+            const newEl = document.getElementById('dash-stat-new');
+            const progEl = document.getElementById('dash-stat-progress');
+            const resEl = document.getElementById('dash-stat-resolved');
+            const rejEl = document.getElementById('dash-stat-rejected');
+            if (totalEl) totalEl.textContent = data.total;
+            if (newEl) newEl.textContent = data.new;
+            if (progEl) progEl.textContent = data.progress;
+            if (resEl) resEl.textContent = data.resolved;
+            if (rejEl) rejEl.textContent = data.rejected;
+        }
+    } catch(e) {}
+}
+setInterval(syncDashboardRealtime, 6000);
+window.addEventListener('focus', syncDashboardRealtime);
+</script>
+{% endblock %}

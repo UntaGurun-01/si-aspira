@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Notifikasi - SI Pengaduan{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item-text">Notifikasi</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-bell-fill me-3" style="color:var(--accent-blue);"></i>Notifikasi</h1>
+    <p class="page-subtitle">Riwayat pemberitahuan dan pembaruan pengaduanmu</p>
+</div>
+
+<div style="max-width:760px;">
+    {% if notifications %}
+        {% set dates = [] %}
+        {% for notif in notifications %}
+        {% set date_str = notif.created_at.strftime('%d %B %Y') %}
+        {% if date_str not in dates %}
+            {% if dates.append(date_str) %}{% endif %}
+            <div style="font-size:0.75rem;font-weight:600;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin:{% if not loop.first %}24px{% else %}0{% endif %} 0 12px;">
+                {{ date_str }}
+            </div>
+        {% endif %}
+
+        <div class="notif-full-item animate-on-scroll {% if not notif.is_read %}notif-full-unread{% endif %}">
+            <div class="notif-icon notif-icon-{{ notif.type }}">
+                {% if notif.type == 'success' %}<i class="bi bi-check-circle-fill"></i>
+                {% elif notif.type == 'warning' %}<i class="bi bi-exclamation-triangle-fill"></i>
+                {% elif notif.type == 'danger' %}<i class="bi bi-x-circle-fill"></i>
+                {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+                    <p style="font-size:0.9rem;font-weight:{% if not notif.is_read %}600{% else %}500{% endif %};color:var(--text-primary);margin:0;">
+                        {{ notif.title }}
+                        {% if not notif.is_read %}
+                        <span style="display:inline-block;width:7px;height:7px;background:var(--accent-blue);border-radius:50%;margin-left:6px;vertical-align:middle;"></span>
+                        {% endif %}
+                    </p>
+                    <span style="font-size:0.75rem;color:var(--text-muted);flex-shrink:0;">{{ notif.created_at.strftime('%H:%M') }}</span>
+                </div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 8px;line-height:1.6;">{{ notif.message }}</p>
+                {% if notif.complaint_id %}
+                <a href="{{ url_for('complaint.detail', id=notif.complaint_id) }}"
+                   style="font-size:0.78rem;color:var(--accent-blue);display:inline-flex;align-items:center;gap:4px;">
+                    Lihat Detail Pengaduan <i class="bi bi-arrow-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card-glass">
+            <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-bell-slash"></i></div>
+                <p class="empty-title">Belum ada notifikasi</p>
+                <p class="empty-desc">Kamu akan menerima notifikasi saat ada pembaruan pengaduanmu</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.notif-full-item {
+    display:flex;align-items:flex-start;gap:16px;
+    padding:16px 20px;border-radius:var(--radius-md);
+    border:1px solid var(--border-color);background:var(--glass-bg);
+    margin-bottom:8px;transition:var(--transition);
+}
+.notif-full-item:hover { background:var(--glass-bg-hover);border-color:var(--border-light); }
+.notif-full-unread {
+    background:rgba(59,130,246,0.04);
+    border-color:rgba(59,130,246,0.15);
+}
+.notif-icon { width:42px;height:42px;flex-shrink:0; }
+</style>
+{% endblock %}

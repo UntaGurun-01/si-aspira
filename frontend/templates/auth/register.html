@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Daftar Akun - SI Pengaduan Mahasiswa{% endblock %}
+
+{% block content %}
+<div style="width:100%;max-width:520px;margin:0 auto;" class="auth-card">
+    <div class="auth-card-inner">
+        <div class="auth-logo">
+            <div class="auth-logo-img-wrapper">
+                <img src="{{ url_for('static', filename='img/logo_kampus.png') }}" alt="Logo Universitas Pahlawan" class="auth-logo-img">
+            </div>
+            <div>
+                <h1 class="auth-title">Buat Akun</h1>
+                <p class="auth-subtitle">Universitas Pahlawan Tuanku Tambusai</p>
+            </div>
+        </div>
+
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:28px;">
+            Daftarkan diri sebagai mahasiswa Teknik Informatika
+        </p>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm">
+            <div class="form-group">
+                <label class="form-label-custom" for="full_name">Nama Lengkap</label>
+                <input type="text" id="full_name" name="full_name" class="form-glass"
+                    placeholder="Nama sesuai identitas" required>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group">
+                    <label class="form-label-custom" for="nim">NIM</label>
+                    <input type="text" id="nim" name="nim" class="form-glass"
+                        placeholder="Contoh: 2024001234" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label-custom" for="semester">Semester</label>
+                    <select id="semester" name="semester" class="form-glass">
+                        {% for i in range(1, 9) %}
+                        <option value="{{ i }}">Semester {{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-glass"
+                    placeholder="email@student.ti.ac.id" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="password">Kata Sandi</label>
+                <div style="position:relative;">
+                    <input type="password" id="password" name="password" class="form-glass"
+                        style="padding-right:44px;" placeholder="Min. 8 karakter" required minlength="8">
+                    <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;"
+                        onclick="togglePasswordVisibility('password','eyeIcon1')">
+                        <i class="bi bi-eye" id="eyeIcon1"></i>
+                    </button>
+                </div>
+                <div id="passwordStrength" style="margin-top:6px;"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="confirm_password">Konfirmasi Kata Sandi</label>
+                <div style="position:relative;">
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-glass"
+                        style="padding-right:44px;" placeholder="Ulangi kata sandi" required>
+                    <button type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;"
+                        onclick="togglePasswordVisibility('confirm_password','eyeIcon2')">
+                        <i class="bi bi-eye" id="eyeIcon2"></i>
+                    </button>
+                </div>
+                <div id="passwordMatch" style="margin-top:6px;font-size:0.75rem;"></div>
+            </div>
+
+            <button type="submit" class="btn-primary-custom w-100 justify-content-center mt-2" id="registerBtn">
+                <i class="bi bi-person-plus-fill"></i>
+                Buat Akun
+            </button>
+        </form>
+
+        <div class="auth-divider"><span>atau</span></div>
+
+        <p style="text-align:center;font-size:0.875rem;color:var(--text-muted);">
+            Sudah punya akun?
+            <a href="{{ url_for('auth.login') }}" style="color:var(--accent-blue);font-weight:600;">
+                Masuk sekarang
+            </a>
+        </p>
+    </div>
+</div>
+
+<script>
+function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+}
+
+// Password strength indicator
+const passwordInput = document.getElementById('password');
+const strengthBar = document.getElementById('passwordStrength');
+passwordInput.addEventListener('input', () => {
+    const val = passwordInput.value;
+    let strength = 0;
+    if (val.length >= 8) strength++;
+    if (/[A-Z]/.test(val)) strength++;
+    if (/[0-9]/.test(val)) strength++;
+    if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+    const labels = ['', 'Lemah', 'Cukup', 'Baik', 'Kuat'];
+    const colors = ['', '#ef4444', '#f59e0b', '#3b82f6', '#10b981'];
+    strengthBar.innerHTML = val ? `
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:4px;background:var(--border-color);border-radius:99px;overflow:hidden;">
+                <div style="width:${strength*25}%;height:100%;background:${colors[strength]};border-radius:99px;transition:all 0.3s;"></div>
+            </div>
+            <span style="font-size:0.7rem;color:${colors[strength]};">${labels[strength]}</span>
+        </div>
+    ` : '';
+});
+
+// Password match check
+const confirmInput = document.getElementById('confirm_password');
+const matchDiv = document.getElementById('passwordMatch');
+confirmInput.addEventListener('input', () => {
+    if (confirmInput.value) {
+        const match = passwordInput.value === confirmInput.value;
+        matchDiv.innerHTML = `<span style="color:${match ? '#10b981' : '#ef4444'};">
+            <i class="bi bi-${match ? 'check-circle' : 'x-circle'} me-1"></i>
+            ${match ? 'Kata sandi cocok' : 'Kata sandi tidak cocok'}
+        </span>`;
+    } else {
+        matchDiv.innerHTML = '';
+    }
+});
+
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    if (passwordInput.value !== confirmInput.value) {
+        e.preventDefault();
+        return;
+    }
+    const btn = document.getElementById('registerBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mendaftar...';
+});
+</script>
+{% endblock %}

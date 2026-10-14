@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% block title %}Laporan & Statistik{% endblock %}
+{% block page_title %}Laporan & Statistik{% endblock %}
+{% block page_subtitle %}Analisis dan evaluasi pengaduan mahasiswa{% endblock %}
+
+{% block content %}
+<!-- Period Filter -->
+<div class="card-dark mb-4 d-flex align-items-center gap-3 flex-wrap">
+    <span style="font-size:13px;color:var(--text-secondary);">Periode:</span>
+    {% for p in ['7 Hari', '30 Hari', '3 Bulan', '6 Bulan', '1 Tahun'] %}
+    <a href="{{ url_for('reports.index', period=p) }}"
+       style="text-decoration:none;padding:6px 14px;border-radius:8px;border:1px solid var(--border-color);
+              background:{% if selected_period == p %}var(--accent-blue){% else %}var(--bg-card){% endif %};
+              color:{% if selected_period == p %}white{% else %}var(--text-secondary){% endif %};
+              font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;
+              transition:all 0.2s;">{{ p }}</a>
+    {% endfor %}
+    <div style="margin-left:auto;display:flex;gap:8px;">
+        <button class="btn-ghost" onclick="window.print()"><i class="bi bi-file-earmark-pdf me-1"></i>Ekspor PDF</button>
+        <button class="btn-ghost" onclick="alert('Fitur ekspor excel sedang disiapkan.')"><i class="bi bi-file-earmark-excel me-1"></i>Ekspor Excel</button>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row g-3 mb-4">
+    <!-- Total Pengaduan -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card blue">
+            <div class="stat-icon blue"><i class="bi bi-collection"></i></div>
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">Total Pengaduan</div>
+            <div class="stat-change up" style="margin-top:6px;">Bulan ini: +{{ stats.this_month }}</div>
+        </div>
+    </div>
+
+    <!-- Tingkat Penyelesaian -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card green">
+            <div class="stat-icon green"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value">{{ stats.resolution_rate }}</div>
+            <div class="stat-label">Tingkat Penyelesaian</div>
+            <div class="stat-change up" style="margin-top:6px;">
+                {% if stats.total > 0 %}{{ stats.resolved }} dari {{ stats.total }} selesai{% else %}Belum ada pengaduan selesai{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Rata-rata Penyelesaian -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card cyan">
+            <div class="stat-icon cyan"><i class="bi bi-clock-history"></i></div>
+            <div class="stat-value">{{ stats.avg_days }}</div>
+            <div class="stat-label">Rata-rata Penyelesaian</div>
+            <div class="stat-change up" style="margin-top:6px;">
+                {% if stats.has_resolved %}Target: &lt; 3 hari{% else %}Belum ada data{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Pengaduan Ditolak -->
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card red">
+            <div class="stat-icon red"><i class="bi bi-x-circle"></i></div>
+            <div class="stat-value">{{ stats.rejection_rate }}</div>
+            <div class="stat-label">Pengaduan Ditolak</div>
+            <div class="stat-change {% if stats.rejected > 0 %}down{% else %}up{% endif %}" style="margin-top:6px;">
+                {{ stats.rejected }} pengaduan ditolak
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <!-- Bar Chart Monthly -->
+    <div class="col-xl-8">
+        <div class="card-dark" style="height:300px;">
+            <div class="card-header-custom">
+                <div>
+                    <div class="card-title">Grafik Pengaduan per Bulan</div>
+                    <div class="card-subtitle">Perbandingan masuk vs selesai</div>
+                </div>
+            </div>
+            <canvas id="barChart" style="max-height:220px;"></canvas>
+        </div>
+    </div>
+    <!-- Completion Rate -->
+    <div class="col-xl-4">
+        <div class="card-dark" style="height:300px;">
+            <div class="card-header-custom">
+                <div class="card-title">Status Distribusi</div>
+            </div>
+            <canvas id="statusChart" style="max-height:200px;"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Category Table & Top Issues -->
+<div class="row g-3">
+    <div class="col-xl-6">
+        <div class="card-dark">
+            <div class="card-header-custom">
+                <div class="card-title">Statistik per Kategori</div>
+            </div>
+            <table class="table-dark-custom">
+                <thead>
+                    <tr>
+                        <th>Kategori</th>
+                        <th>Total</th>
+                        <th>Selesai</th>
+                        <th>Rate</th>
+                        <th>Tren</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in category_stats %}
+                    <tr>
+                        <td style="font-size:13px;">{{ cat.name }}</td>
+                        <td style="font-size:13px;font-weight:600;">{{ cat.total }}</td>
+                        <td style="font-size:13px;color:var(--accent-green);">{{ cat.resolved }}</td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <div style="flex:1;height:4px;background:var(--bg-secondary);border-radius:2px;min-width:60px;">
+                                    <div style="height:100%;width:{{ cat.rate_num }}%;
+                                                background:var(--accent-green);border-radius:2px;"></div>
+                                </div>
+                                <span style="font-size:11px;font-weight:600;color:var(--accent-green);">{{ cat.rate }}</span>
+                            </div>
+                        </td>
+                        <td style="font-size:16px;
+                            {% if cat.tren == '↑' %}color:var(--accent-green);
+                            {% elif cat.tren == '↓' %}color:var(--accent-red);
+                            {% else %}color:var(--text-muted);{% endif %}">{{ cat.tren }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Top Issues -->
+    <div class="col-xl-6">
+        <div class="card-dark" style="min-height:360px;">
+            <div class="card-header-custom">
+                <div class="card-title">Masalah Paling Sering Dilaporkan</div>
+            </div>
+            {% if top_issues %}
+                {% for issue in top_issues %}
+                <div style="margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                        <span style="font-size:13px;">{{ issue.title }}</span>
+                        <span style="font-size:12px;color:var(--text-secondary);">{{ issue.count }} laporan</span>
+                    </div>
+                    <div style="height:5px;background:var(--bg-secondary);border-radius:3px;">
+                        <div style="height:100%;width:{{ issue.percentage }}%;
+                                    background:var(--accent-{{ issue.color }});border-radius:3px;
+                                    transition:width 0.5s;"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align:center;padding:70px 20px;color:var(--text-muted);">
+                    <i class="bi bi-inbox" style="font-size:36px;display:block;margin-bottom:10px;opacity:0.4;"></i>
+                    <div style="font-size:13px;font-weight:500;">Belum ada masalah yang dilaporkan</div>
+                    <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Data akan diperbarui otomatis saat pengaduan masuk</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Embed server data safely as JSON to avoid JS lint errors -->
+<script id="reports-data" type="application/json">
+{
+  "months": {{ months | tojson }},
+  "monthlyMasuk": {{ monthly_masuk | tojson }},
+  "monthlySelesai": {{ monthly_selesai | tojson }},
+  "statusCounts": {{ status_counts | tojson }}
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const reportsData = JSON.parse(document.getElementById('reports-data').textContent);
+
+Chart.defaults.color = '#8b949e';
+Chart.defaults.font.family = 'Inter';
+
+// Bar Chart: Perbandingan Masuk vs Selesai
+new Chart(document.getElementById('barChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: reportsData.months,
+        datasets: [{
+            label: 'Masuk',
+            data: reportsData.monthlyMasuk,
+            backgroundColor: 'rgba(37,99,235,0.7)',
+            borderRadius: 6,
+        },{
+            label: 'Selesai',
+            data: reportsData.monthlySelesai,
+            backgroundColor: 'rgba(16,185,129,0.7)',
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                align: 'end',
+                labels: { boxWidth: 12, padding: 16, usePointStyle: true }
+            },
+            tooltip: { backgroundColor: '#1c2128', borderColor: '#30363d', borderWidth: 1 }
+        },
+        scales: {
+            x: { grid: { display: false }, border: { display: false } },
+            y: {
+                grid: { color: 'rgba(48,54,61,0.5)' },
+                border: { display: false },
+                beginAtZero: true,
+                suggestedMax: 5,
+                ticks: { precision: 0 }
+            }
+        }
+    }
+});
+
+// Status Doughnut Chart
+const statusCounts = reportsData.statusCounts;
+const totalStatus = statusCounts.reduce((a, b) => a + b, 0);
+
+new Chart(document.getElementById('statusChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+        labels: totalStatus > 0 ? ['Selesai', 'Diproses', 'Baru', 'Ditolak'] : ['Belum ada data'],
+        datasets: [{
+            data: totalStatus > 0 ? statusCounts : [1],
+            backgroundColor: totalStatus > 0 ? ['#10b981', '#f59e0b', '#2563eb', '#ef4444'] : ['#30363d'],
+            borderColor: '#1c2128',
+            borderWidth: 3,
+            hoverOffset: totalStatus > 0 ? 6 : 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 12,
+                    usePointStyle: true,
+                    generateLabels: function(chart) {
+                        if (totalStatus === 0) {
+                            return [{
+                                text: 'Belum ada data pengaduan',
+                                fillStyle: '#30363d',
+                                strokeStyle: '#1c2128',
+                                pointStyle: 'circle'
+                            }];
+                        }
+                        return Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                    }
+                }
+            },
+            tooltip: {
+                enabled: totalStatus > 0,
+                backgroundColor: '#1c2128',
+                borderColor: '#30363d',
+                borderWidth: 1
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('user_theme') || 'dark';
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light-theme');
+                    document.documentElement.classList.remove('dark');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light-theme');
+                }
+            } catch(e) {}
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistem Informasi Pengaduan Mahasiswa Prodi Teknik Informatika">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/favicon.png') }}">
+
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#0a0f1e',
+                            800: '#0d1530',
+                            700: '#111b3f',
+                            600: '#162250',
+                            500: '#1a2a6c',
+                        },
+                        accent: {
+                            blue: '#3b82f6',
+                            purple: '#8b5cf6',
+                            cyan: '#06b6d4',
+                        }
+                    }
+                }
+            },
+            corePlugins: {
+                preflight: false,
+            }
+        }
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="dark bg-navy-900">
+
+    {% if current_user.is_authenticated %}
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo-wrapper">
+                <img src="{{ url_for('static', filename='img/logo_kampus.png') }}" alt="Logo Universitas Pahlawan"
+                    class="brand-logo-img">
+            </div>
+            <div class="brand-text">
+                <span class="brand-title">Si ASPIRA</span>
+                <span class="brand-subtitle">Teknik Informatika</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">MENU UTAMA</div>
+            <a href="{{ url_for('dashboard.index') }}"
+                class="nav-link-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+                <i class="bi bi-grid-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('complaint.create_complaint') }}"
+                class="nav-link-item {% if request.endpoint == 'complaint.create_complaint' %}active{% endif %}">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Buat Pengaduan</span>
+            </a>
+            <a href="{{ url_for('complaint.list_complaints') }}"
+                class="nav-link-item {% if request.endpoint in ['complaint.list_complaints', 'complaint.detail'] %}active{% endif %}">
+                <i class="bi bi-list-ul"></i>
+                <span>Pengaduan Saya</span>
+            </a>
+            <a href="{{ url_for('notification.index') }}"
+                class="nav-link-item {% if request.endpoint == 'notification.index' %}active{% endif %}">
+                <i class="bi bi-bell-fill"></i>
+                <span>Notifikasi</span>
+                {% set unread = current_user.unread_notifications_count() %}
+                {% if unread > 0 %}
+                <span class="notif-badge">{{ unread }}</span>
+                {% endif %}
+            </a>
+
+            <div class="nav-section-label mt-4">AKUN</div>
+            <a href="{{ url_for('profile.index') }}"
+                class="nav-link-item {% if 'profile' in request.endpoint %}active{% endif %}">
+                <i class="bi bi-person-circle"></i>
+                <span>akun saya</span>
+            </a>
+            <a href="{{ url_for('settings.index') }}"
+                class="nav-link-item {% if 'settings' in request.endpoint %}active{% endif %}">
+                <i class="bi bi-gear-fill"></i>
+                <span>Pengaturan</span>
+            </a>
+            <a href="{{ url_for('about.index') }}"
+                class="nav-link-item {% if 'about' in request.endpoint %}active{% endif %}">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>Tentang Web</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-link-item text-danger-custom">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                {% if current_user.avatar %}
+                <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" alt="Avatar"
+                    class="user-avatar-sm">
+                {% else %}
+                <div class="user-avatar-placeholder-sm">
+                    {{ current_user.full_name[0] | upper }}
+                </div>
+                {% endif %}
+                <div class="user-info-sm">
+                    <span class="user-name-sm">{{ current_user.full_name.split()[0] }}</span>
+                    <span class="user-nim-sm">{{ current_user.nim }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <div class="navbar-left">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="page-breadcrumb">
+                    {% block breadcrumb %}
+                    <span class="breadcrumb-item-text">Dashboard</span>
+                    {% endblock %}
+                </div>
+            </div>
+            <div class="navbar-right">
+                <!-- Search -->
+                <div class="navbar-search d-none d-md-block">
+                    <form action="{{ url_for('complaint.list_complaints') }}" method="get">
+                        <div class="search-wrapper">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" name="search" class="search-input" placeholder="Cari pengaduan...">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Notifications -->
+                <div class="dropdown navbar-icon-btn" id="notifDropdown">
+                    <button class="icon-btn position-relative" data-bs-toggle="dropdown">
+                        <i class="bi bi-bell-fill"></i>
+                        {% set unread = current_user.unread_notifications_count() %}
+                        {% if unread > 0 %}
+                        <span class="notif-dot">{{ unread }}</span>
+                        {% endif %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end notif-dropdown p-0">
+                        <div class="notif-header">
+                            <span class="fw-600">Notifikasi</span>
+                            {% if unread > 0 %}
+                            <span class="badge-new">{{ unread }} baru</span>
+                            {% endif %}
+                        </div>
+                        <div class="notif-list">
+                            {% set recent_notifs = current_user.notifications | sort(attribute='created_at',
+                            reverse=True) | list %}
+                            {% if recent_notifs %}
+                            {% for notif in recent_notifs[:5] %}
+                            <a href="{{ url_for('notification.index') }}"
+                                class="notif-item {% if not notif.is_read %}unread{% endif %}">
+                                <div class="notif-icon notif-icon-{{ notif.type }}">
+                                    {% if notif.type == 'success' %}<i class="bi bi-check-circle-fill"></i>
+                                    {% elif notif.type == 'warning' %}<i class="bi bi-exclamation-triangle-fill"></i>
+                                    {% elif notif.type == 'danger' %}<i class="bi bi-x-circle-fill"></i>
+                                    {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+                                </div>
+                                <div class="notif-content">
+                                    <p class="notif-title">{{ notif.title }}</p>
+                                    <p class="notif-time">{{ notif.created_at.strftime('%d %b, %H:%M') }}</p>
+                                </div>
+                            </a>
+                            {% endfor %}
+                            {% else %}
+                            <div class="notif-empty">
+                                <i class="bi bi-bell-slash"></i>
+                                <p>Tidak ada notifikasi</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="notif-footer">
+                            <a href="{{ url_for('notification.index') }}">Lihat semua notifikasi</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="dropdown">
+                    <button class="user-menu-btn" data-bs-toggle="dropdown">
+                        {% if current_user.avatar %}
+                        <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" alt="Avatar"
+                            class="user-avatar-nav">
+                        {% else %}
+                        <div class="user-avatar-nav-placeholder">
+                            {{ current_user.full_name[0] | upper }}
+                        </div>
+                        {% endif %}
+                        <div class="user-menu-info d-none d-md-block">
+                            <span class="user-menu-name">{{ current_user.full_name.split()[0] }} {{
+                                current_user.full_name.split()[1] if current_user.full_name.split()|length > 1 else ''
+                                }}</span>
+                            <span class="user-menu-role">Mahasiswa · {{ current_user.nim }}</span>
+                        </div>
+                        <i class="bi bi-chevron-down d-none d-md-block"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end user-dropdown">
+                        <li>
+                            <div class="user-dropdown-header">
+                                <strong>{{ current_user.full_name }}</strong>
+                                <small>{{ current_user.email }}</small>
+                            </div>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="{{ url_for('profile.index') }}"><i
+                                    class="bi bi-person-circle me-2"></i>Profil Saya</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('settings.index') }}"><i
+                                    class="bi bi-gear-fill me-2"></i>Pengaturan</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('profile.change_password') }}"><i
+                                    class="bi bi-shield-lock me-2"></i>Ganti Kata Sandi</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('about.index') }}"><i
+                                    class="bi bi-info-circle me-2"></i>Tentang Web</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i
+                                    class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Flash Messages -->
+        <div class="flash-container" id="flashContainer">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert-toast alert-toast-{{ category }}" role="alert">
+                <div class="alert-toast-icon">
+                    {% if category == 'success' %}<i class="bi bi-check-circle-fill"></i>
+                    {% elif category == 'danger' %}<i class="bi bi-x-circle-fill"></i>
+                    {% elif category == 'warning' %}<i class="bi bi-exclamation-triangle-fill"></i>
+                    {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+                </div>
+                <div class="alert-toast-body">{{ message | safe }}</div>
+                <button class="alert-toast-close" onclick="this.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Page Content -->
+        <main class="page-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% else %}
+    <!-- Auth Layout -->
+    <div class="auth-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="auth-alerts" id="authAlerts">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message | safe }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        {{ self.content() }}
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

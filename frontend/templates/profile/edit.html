@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profil - SI Pengaduan{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('profile.index') }}" style="color:var(--text-muted);font-size:0.85rem;">Profil</a>
+<i class="bi bi-chevron-right mx-2" style="font-size:0.7rem;color:var(--text-muted);"></i>
+<span class="breadcrumb-item-text">Edit Profil</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title"><i class="bi bi-pencil-fill me-3" style="color:var(--accent-blue);"></i>Edit Profil</h1>
+</div>
+
+<div style="max-width:600px;">
+    <div class="card-glass">
+        <form method="POST" action="{{ url_for('profile.edit') }}" enctype="multipart/form-data">
+
+            <!-- Avatar Upload -->
+            <div class="form-group text-center" style="margin-bottom:28px;">
+                <div style="position:relative;display:inline-block;cursor:pointer;" onclick="document.getElementById('avatarInput').click();">
+                    {% if current_user.avatar %}
+                    <img id="avatarPreview" src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}"
+                         style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid rgba(16,185,129,0.55);box-shadow:0 0 20px rgba(16,185,129,0.25);">
+                    {% else %}
+                    <div id="avatarPreviewPlaceholder" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:white;box-shadow:0 0 20px rgba(16,185,129,0.25);">
+                        {{ current_user.full_name[0] | upper }}
+                    </div>
+                    <img id="avatarPreview" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid rgba(16,185,129,0.55);display:none;">
+                    {% endif %}
+                    <div style="position:absolute;bottom:0;right:0;width:26px;height:26px;background:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--navy-800);">
+                        <i class="bi bi-camera-fill" style="font-size:0.6rem;color:white;"></i>
+                    </div>
+                </div>
+                <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;">
+                <p style="font-size:0.75rem;color:var(--text-muted);margin:10px 0 0;">Klik untuk ganti foto profil</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="full_name">Nama Lengkap</label>
+                <input type="text" id="full_name" name="full_name" class="form-glass"
+                    value="{{ current_user.full_name }}" required>
+            </div>
+
+            <!-- NIM (read-only) -->
+            <div class="form-group">
+                <label class="form-label-custom">NIM <span style="color:var(--text-muted);font-weight:400;">(tidak dapat diubah)</span></label>
+                <input type="text" class="form-glass" value="{{ current_user.nim }}" readonly
+                    style="opacity:0.6;cursor:not-allowed;">
+            </div>
+
+            <!-- Email (read-only) -->
+            <div class="form-group">
+                <label class="form-label-custom">Email <span style="color:var(--text-muted);font-weight:400;">(tidak dapat diubah)</span></label>
+                <input type="text" class="form-glass" value="{{ current_user.email }}" readonly
+                    style="opacity:0.6;cursor:not-allowed;">
+            </div>
+
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="form-label-custom" for="semester">Semester</label>
+                        <select id="semester" name="semester" class="form-glass">
+                            {% for i in range(1, 9) %}
+                            <option value="{{ i }}" {% if current_user.semester == i %}selected{% endif %}>
+                                Semester {{ i }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label class="form-label-custom" for="phone">Nomor Telepon</label>
+                        <input type="tel" id="phone" name="phone" class="form-glass"
+                            placeholder="08xxxxxxxxxx"
+                            value="{{ current_user.phone or '' }}">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:8px;">
+                <button type="submit" class="btn-primary-custom">
+                    <i class="bi bi-check-circle-fill"></i> Simpan Perubahan
+                </button>
+                <a href="{{ url_for('profile.index') }}" class="btn-glass">
+                    <i class="bi bi-x-circle"></i> Batal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Avatar preview with placeholder handling
+const avatarInput = document.getElementById('avatarInput');
+const avatarPreview = document.getElementById('avatarPreview');
+const avatarPlaceholder = document.getElementById('avatarPreviewPlaceholder');
+
+if (avatarInput) {
+    avatarInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+                avatarPreview.src = e.target.result;
+                avatarPreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+</script>
+{% endblock %}

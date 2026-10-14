@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% block title %}Detail {{ complaint.ticket_number }}{% endblock %}
+{% block page_title %}Detail Pengaduan{% endblock %}
+{% block page_subtitle %}Kelola dan berikan tindak lanjut laporan pengaduan mahasiswa{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Left: Complaint Detail -->
+    <div class="col-xl-8">
+        <!-- Header Card -->
+        <div class="card-dark mb-3">
+            <div class="d-flex align-items-start justify-content-between mb-3 flex-wrap gap-2">
+                <div>
+                    <div style="font-family:monospace;color:var(--accent-blue-light);font-size:13px;margin-bottom:6px;font-weight:700;">
+                        #{{ complaint.ticket_number }}
+                    </div>
+                    <h2 style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text-primary);">{{ complaint.title }}</h2>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        {% if complaint.status == 'menunggu' %}
+                        <span class="badge-status badge-new"><i class="bi bi-clock me-1"></i>Baru</span>
+                        {% elif complaint.status == 'diproses' %}
+                        <span class="badge-status badge-progress"><i class="bi bi-hourglass-split me-1"></i>Sedang Diproses</span>
+                        {% elif complaint.status == 'selesai' %}
+                        <span class="badge-status badge-resolved"><i class="bi bi-check-circle me-1"></i>Selesai</span>
+                        {% else %}
+                        <span class="badge-status badge-rejected"><i class="bi bi-x-circle me-1"></i>Ditolak</span>
+                        {% endif %}
+
+                        <span style="background:rgba(37,99,235,0.15);color:var(--accent-blue-light);padding:3px 10px;
+                                     border-radius:20px;font-size:11px;font-weight:600;">
+                            <i class="bi bi-tag me-1"></i>{{ complaint.category_label }}
+                        </span>
+                        <span style="font-size:12px;color:var(--text-muted);">
+                            <i class="bi bi-calendar3 me-1"></i>{{ complaint.created_at.strftime('%d %B %Y, %H:%M') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('complaints.index') }}" class="btn-ghost">
+                        <i class="bi bi-arrow-left me-1"></i> Kembali
+                    </a>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div style="background:var(--bg-secondary);border-radius:10px;padding:16px;
+                        border-left:3px solid var(--accent-blue);margin-bottom:16px;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;font-weight:600;">
+                    DESKRIPSI PENGADUAN MAHASISWA
+                </div>
+                <div style="font-size:14px;line-height:1.7;color:var(--text-primary);white-space:pre-wrap;">{{ complaint.description }}</div>
+            </div>
+
+            <!-- Attachments -->
+            <div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;font-weight:600;display:flex;align-items:center;gap:6px;">
+                    <i class="bi bi-paperclip"></i> LAMPIRAN BUKTI ({{ complaint.attachments|length }} File)
+                </div>
+                {% if complaint.attachments %}
+                <div class="row g-2">
+                    {% for att in complaint.attachments %}
+                    <div class="col-sm-6 col-md-4">
+                        {% if att.file_type in ['png', 'jpg', 'jpeg', 'gif', 'webp'] %}
+                        <a href="/static/uploads/{{ att.filename }}" target="_blank"
+                           style="display:block;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                  border-radius:10px;overflow:hidden;text-decoration:none;transition:border-color 0.2s;"
+                           onmouseover="this.style.borderColor='var(--accent-blue)'"
+                           onmouseout="this.style.borderColor='var(--border-color)'">
+                            <div style="height:110px;overflow:hidden;background:#0d1117;display:flex;align-items:center;justify-content:center;">
+                                <img src="/static/uploads/{{ att.filename }}" alt="{{ att.original_filename }}"
+                                     style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <div style="padding:8px 10px;display:flex;align-items:center;justify-content:space-between;">
+                                <span style="font-size:12px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">
+                                    {{ att.original_filename }}
+                                </span>
+                                <i class="bi bi-box-arrow-up-right" style="color:var(--accent-blue-light);font-size:11px;"></i>
+                            </div>
+                        </a>
+                        {% else %}
+                        <a href="/static/uploads/{{ att.filename }}" target="_blank" download="{{ att.original_filename }}"
+                           style="display:flex;align-items:center;gap:10px;padding:12px 14px;
+                                  background:var(--bg-secondary);border:1px solid var(--border-color);
+                                  border-radius:10px;text-decoration:none;color:var(--text-primary);transition:border-color 0.2s;"
+                           onmouseover="this.style.borderColor='var(--accent-blue)'"
+                           onmouseout="this.style.borderColor='var(--border-color)'">
+                            <i class="bi bi-file-earmark-{{ 'pdf' if att.file_type == 'pdf' else 'text' }}-fill"
+                               style="font-size:22px;color:var(--accent-red);"></i>
+                            <div style="flex:1;overflow:hidden;">
+                                <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                    {{ att.original_filename }}
+                                </div>
+                                <div style="font-size:11px;color:var(--text-muted);">
+                                    {{ att.file_type|upper }}
+                                </div>
+                            </div>
+                            <i class="bi bi-download" style="color:var(--text-muted);font-size:13px;"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="padding:12px 14px;background:var(--bg-secondary);border:1px dashed var(--border-color);border-radius:8px;color:var(--text-muted);font-size:12px;">
+                    <i class="bi bi-info-circle me-1"></i> Tidak ada lampiran berkas pada pengaduan ini.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Responses List (Tanggapan yang sudah dikirim) -->
+        <div class="card-dark mb-3">
+            <div class="card-header-custom">
+                <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+                    <i class="bi bi-chat-left-dots-fill" style="color:var(--accent-blue-light);"></i>
+                    Daftar Tanggapan Petugas ({{ complaint.responses|length }})
+                </div>
+            </div>
+            {% if complaint.responses %}
+            <div class="d-flex flex-column gap-3">
+                {% for resp in complaint.responses | sort(attribute='created_at') %}
+                <div style="background:rgba(37,99,235,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px 16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:32px;height:32px;border-radius:8px;
+                                        background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+                                        display:flex;align-items:center;justify-content:center;
+                                        font-size:12px;font-weight:700;color:white;">
+                                {{ resp.responder_name[0]|upper }}
+                            </div>
+                            <div>
+                                <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ resp.responder_name }}</span>
+                                <span style="font-size:11px;color:var(--accent-blue-light);margin-left:6px;background:rgba(37,99,235,0.15);padding:2px 8px;border-radius:12px;">Petugas Admin</span>
+                            </div>
+                        </div>
+                        <span style="font-size:11px;color:var(--text-muted);">
+                            <i class="bi bi-clock me-1"></i>{{ resp.created_at.strftime('%d %b %Y, %H:%M') }}
+                        </span>
+                    </div>
+                    <div style="font-size:13px;color:var(--text-primary);line-height:1.7;white-space:pre-wrap;padding-left:42px;">
+                        {{ resp.message }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:24px 16px;color:var(--text-muted);font-size:13px;">
+                <i class="bi bi-chat-square-text" style="font-size:24px;display:block;margin-bottom:6px;opacity:0.4;"></i>
+                Belum ada tanggapan yang diberikan untuk pengaduan ini.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Add Response Form -->
+        <div class="card-dark mb-3">
+            <div class="card-header-custom">
+                <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+                    <i class="bi bi-reply-fill" style="color:var(--accent-green);"></i>
+                    Beri Tanggapan ke Mahasiswa
+                </div>
+            </div>
+            <form method="POST" action="{{ url_for('complaints.add_response', id=complaint.id) }}">
+                <div class="mb-3">
+                    <textarea name="message" rows="4" required
+                              placeholder="Tulis tanggapan atau penjelasan resmi untuk mahasiswa pelapor..."
+                              style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                     border-radius:10px;padding:12px 14px;color:var(--text-primary);
+                                     font-size:13px;font-family:'Inter',sans-serif;outline:none;
+                                     resize:vertical;transition:border-color 0.2s;"
+                              onfocus="this.style.borderColor='var(--accent-blue)'"
+                              onblur="this.style.borderColor='var(--border-color)'"></textarea>
+                </div>
+                <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="mark_resolved" value="0" class="btn-primary-dark">
+                            <i class="bi bi-send me-2"></i>Kirim Tanggapan
+                        </button>
+                        <button type="submit" name="mark_resolved" value="1" class="btn-ghost"
+                                style="color:var(--accent-green);border-color:rgba(16,185,129,0.3);"
+                                title="Kirim tanggapan sekaligus ubah status tiket menjadi Selesai">
+                            <i class="bi bi-check2-circle me-1"></i>Tanggapi & Selesaikan
+                        </button>
+                    </div>
+                    <span style="font-size:11px;color:var(--text-muted);">
+                        <i class="bi bi-bell-fill me-1" style="color:var(--accent-yellow);"></i>Mahasiswa otomatis menerima notifikasi realtime
+                    </span>
+                </div>
+            </form>
+        </div>
+
+        <!-- Timeline Status Log -->
+        <div class="card-dark mb-3">
+            <div class="card-header-custom">
+                <div class="card-title" style="display:flex;align-items:center;gap:8px;">
+                    <i class="bi bi-clock-history"></i>
+                    Kronologi / Riwayat Tindak Lanjut
+                </div>
+            </div>
+            {% if complaint.status_logs %}
+            <div style="position:relative;padding-left:24px;">
+                {% for log in complaint.status_logs | sort(attribute='created_at', reverse=True) %}
+                {% set dot_color = 'green' if log.new_status == 'selesai' else ('yellow' if log.new_status == 'diproses' else ('red' if log.new_status == 'ditolak' else 'blue')) %}
+                <div style="position:relative;padding-bottom:18px;padding-left:16px;">
+                    <div style="position:absolute;left:-24px;top:2px;
+                                width:16px;height:16px;border-radius:50%;
+                                background:var(--bg-secondary);
+                                border:3px solid var(--accent-{{ dot_color }});"></div>
+                    {% if not loop.last %}
+                    <div style="position:absolute;left:-17px;top:18px;bottom:0;
+                                width:2px;background:var(--border-color);"></div>
+                    {% endif %}
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px;">
+                        <span style="font-size:12px;font-weight:600;color:var(--text-primary);">
+                            {% if log.new_status == 'menunggu' %}Pengaduan Baru Diterima
+                            {% elif log.new_status == 'diproses' %}Diproses
+                            {% elif log.new_status == 'selesai' %}Pengaduan Diselesaikan
+                            {% elif log.new_status == 'ditolak' %}Pengaduan Ditolak
+                            {% else %}{{ log.new_status|capitalize }}{% endif %}
+                        </span>
+                        <span style="font-size:11px;color:var(--text-muted);">
+                            {{ log.created_at.strftime('%d %b %Y, %H:%M') }}
+                        </span>
+                    </div>
+                    {% if log.note %}
+                    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:2px;">{{ log.note }}</div>
+                    {% endif %}
+                    <div style="font-size:11px;color:var(--text-muted);">
+                        oleh <strong style="color:var(--text-secondary);">{{ log.changed_by }}</strong>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="font-size:12px;color:var(--text-muted);text-align:center;padding:16px;">
+                Belum ada catatan kronologi status.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right: Student Info & Actions -->
+    <div class="col-xl-4 d-flex flex-column gap-3">
+        <!-- Student Info Card -->
+        <div class="card-dark">
+            <div class="card-header-custom"><div class="card-title">Informasi Mahasiswa Pelapor</div></div>
+            {% if complaint.user %}
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                {% if complaint.user.avatar %}
+                <img src="/static/uploads/avatars/{{ complaint.user.avatar }}"
+                     style="width:48px;height:48px;border-radius:12px;object-fit:cover;flex-shrink:0;">
+                {% else %}
+                <div style="width:48px;height:48px;border-radius:12px;flex-shrink:0;
+                            background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:20px;font-weight:700;color:white;">
+                    {{ complaint.user.full_name[0]|upper }}
+                </div>
+                {% endif %}
+                <div style="overflow:hidden;">
+                    <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ complaint.user.full_name }}
+                    </div>
+                    <div style="font-size:12px;color:var(--accent-blue-light);">{{ complaint.user.program_studi }}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">NIM: {{ complaint.user.nim }}</div>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(48,54,61,0.5);font-size:12px;">
+                    <span style="color:var(--text-secondary);"><i class="bi bi-mortarboard me-1"></i>Semester</span>
+                    <span style="font-weight:500;">{{ complaint.user.semester }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(48,54,61,0.5);font-size:12px;">
+                    <span style="color:var(--text-secondary);"><i class="bi bi-envelope me-1"></i>Email</span>
+                    <span style="font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;">{{ complaint.user.email }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(48,54,61,0.5);font-size:12px;">
+                    <span style="color:var(--text-secondary);"><i class="bi bi-telephone me-1"></i>Telepon</span>
+                    <span style="font-weight:500;">{{ complaint.user.phone or '-' }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;">
+                    <span style="color:var(--text-secondary);"><i class="bi bi-collection me-1"></i>Total Pengaduan</span>
+                    <span class="badge-status badge-new">{{ complaint.user.complaints|length }} laporan</span>
+                </div>
+            </div>
+            {% else %}
+            <div style="color:var(--text-muted);font-size:12px;">Akun mahasiswa tidak ditemukan atau telah dihapus.</div>
+            {% endif %}
+        </div>
+
+        <!-- Kelola Pengaduan (Ubah Status) Form -->
+        <div class="card-dark">
+            <div class="card-header-custom"><div class="card-title">Kelola Status Pengaduan</div></div>
+            <form method="POST" action="{{ url_for('complaints.update_status', id=complaint.id) }}">
+                <!-- Status -->
+                <div class="mb-3">
+                    <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                        UBAH STATUS TIKET
+                    </label>
+                    <select name="status" style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                   border-radius:10px;padding:9px 12px;color:var(--text-primary);
+                                   font-size:13px;outline:none;font-family:'Inter',sans-serif;">
+                        <option value="menunggu" {% if complaint.status == 'menunggu' %}selected{% endif %}>🔵 Baru / Menunggu</option>
+                        <option value="diproses" {% if complaint.status == 'diproses' %}selected{% endif %}>🟡 Sedang Diproses</option>
+                        <option value="selesai" {% if complaint.status == 'selesai' %}selected{% endif %}>🟢 Selesai Ditangani</option>
+                        <option value="ditolak" {% if complaint.status == 'ditolak' %}selected{% endif %}>🔴 Ditolak</option>
+                    </select>
+                </div>
+
+                <!-- Petugas Penanggung Jawab -->
+                <div class="mb-3">
+                    <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                        TETAPKAN PETUGAS PENANGGUNG JAWAB
+                    </label>
+                    <input type="text" name="officer" value="{{ current_user.name if current_user.is_authenticated else 'Administrator' }}"
+                           placeholder="Nama petugas yang menangani..."
+                           style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                  border-radius:10px;padding:9px 12px;color:var(--text-primary);
+                                  font-size:13px;outline:none;font-family:'Inter',sans-serif;">
+                </div>
+
+                <!-- Catatan Perubahan -->
+                <div class="mb-3">
+                    <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;font-weight:600;">
+                        CATATAN STATUS (DILIHAT MAHASISWA)
+                    </label>
+                    <textarea name="note" rows="2" placeholder="Alasan perubahan status atau instruksi lanjutan..."
+                              style="width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);
+                                     border-radius:10px;padding:8px 12px;color:var(--text-primary);
+                                     font-size:12px;font-family:'Inter',sans-serif;outline:none;resize:vertical;"></textarea>
+                </div>
+
+                <button type="submit" class="btn-primary-dark" style="width:100%;">
+                    <i class="bi bi-floppy2 me-2"></i>Simpan Perubahan Status
+                </button>
+            </form>
+        </div>
+
+        <!-- Quick Info Tiket -->
+        <div class="card-dark">
+            <div class="card-header-custom"><div class="card-title">Ringkasan Tiket</div></div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(48,54,61,0.5);font-size:12px;">
+                    <span style="color:var(--text-secondary);">Nomor Tiket</span>
+                    <span style="font-weight:600;font-family:monospace;color:var(--accent-blue-light);">#{{ complaint.ticket_number }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(48,54,61,0.5);font-size:12px;">
+                    <span style="color:var(--text-secondary);">Kategori</span>
+                    <span style="font-weight:500;">{{ complaint.category_label }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(48,54,61,0.5);font-size:12px;">
+                    <span style="color:var(--text-secondary);">Waktu Masuk</span>
+                    <span style="font-weight:500;">{{ complaint.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(48,54,61,0.5);font-size:12px;">
+                    <span style="color:var(--text-secondary);">Update Terakhir</span>
+                    <span style="font-weight:500;">{{ complaint.updated_at.strftime('%d %b %Y, %H:%M') if complaint.updated_at else '-' }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;">
+                    <span style="color:var(--text-secondary);">Status Saat Ini</span>
+                    <span style="font-weight:600;">{{ complaint.status_label }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

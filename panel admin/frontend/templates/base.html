@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel Admin - Si ASPIRA Sistem Informasi Pengaduan Mahasiswa Universitas Pahlawan">
+    <title>{% block title %}Panel Admin{% endblock %} | Si ASPIRA</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-hover: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-blue: #2563eb;
+            --accent-blue-light: #3b82f6;
+            --accent-purple: #7c3aed;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
+            --sidebar-width: 72px;
+            --sidebar-expanded: 260px;
+            --topbar-height: 64px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* ─── SIDEBAR ─────────────────────────────────── */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0;
+            z-index: 1000;
+            transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+            overflow: hidden;
+        }
+        .sidebar:hover, .sidebar.expanded {
+            width: var(--sidebar-expanded);
+            align-items: flex-start;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 20px;
+            margin-bottom: 32px;
+            min-width: var(--sidebar-expanded);
+        }
+        .logo-icon {
+            width: 36px; height: 36px; min-width: 36px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+        .logo-text {
+            font-size: 14px; font-weight: 700;
+            color: var(--text-primary);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .sidebar:hover .logo-text, .sidebar.expanded .logo-text { opacity: 1; }
+
+        .sidebar-nav {
+            flex: 1;
+            width: 100%;
+            padding: 0 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 8px 8px 4px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            min-width: 200px;
+        }
+        .sidebar:hover .nav-section-label, .sidebar.expanded .nav-section-label { opacity: 1; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 8px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+            position: relative;
+            min-width: 48px;
+        }
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        .nav-item.active {
+            background: rgba(37, 99, 235, 0.15);
+            color: var(--accent-blue-light);
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 50%; transform: translateY(-50%);
+            width: 3px; height: 20px;
+            background: var(--accent-blue-light);
+            border-radius: 0 3px 3px 0;
+        }
+        .nav-item i {
+            font-size: 18px;
+            min-width: 20px;
+            text-align: center;
+        }
+        .nav-label {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .sidebar:hover .nav-label, .sidebar.expanded .nav-label { opacity: 1; }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--accent-red);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .sidebar:hover .nav-badge, .sidebar.expanded .nav-badge { opacity: 1; }
+
+        .sidebar-bottom {
+            padding: 12px;
+            width: 100%;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        /* ─── TOPBAR ──────────────────────────────────── */
+        .topbar {
+            position: fixed;
+            top: 0; right: 0;
+            left: var(--sidebar-width);
+            height: var(--topbar-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 16px;
+            z-index: 999;
+            transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        .topbar-left { flex: 1; }
+        .topbar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .topbar-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 14px;
+            width: 280px;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus-within { border-color: var(--accent-blue); }
+        .search-box i { color: var(--text-muted); font-size: 14px; }
+        .search-box input {
+            background: none; border: none; outline: none;
+            color: var(--text-primary);
+            font-size: 13px; width: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+
+        .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+        .topbar-btn {
+            width: 38px; height: 38px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            text-decoration: none;
+        }
+        .topbar-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .topbar-btn .badge-dot {
+            position: absolute; top: 6px; right: 6px;
+            width: 8px; height: 8px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            border: 2px solid var(--bg-secondary);
+        }
+        .topbar-btn .badge-count {
+            position: absolute; top: -5px; right: -5px;
+            min-width: 18px; height: 18px;
+            background: var(--accent-red);
+            color: white;
+            font-size: 10px; font-weight: 700;
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px;
+            border: 2px solid var(--bg-card);
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+            line-height: 1;
+        }
+
+        @keyframes bellRing {
+            0% { transform: rotate(0); }
+            10% { transform: rotate(18deg); }
+            20% { transform: rotate(-18deg); }
+            30% { transform: rotate(14deg); }
+            40% { transform: rotate(-14deg); }
+            50% { transform: rotate(8deg); }
+            60% { transform: rotate(-8deg); }
+            70% { transform: rotate(0); }
+            100% { transform: rotate(0); }
+        }
+
+        .bell-ringing {
+            display: inline-block;
+            animation: bellRing 1.8s infinite ease-in-out;
+            transform-origin: top center;
+            color: var(--accent-yellow) !important;
+        }
+
+        .admin-avatar {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* ─── MAIN CONTENT ────────────────────────────── */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topbar-height);
+            padding: 28px;
+            min-height: calc(100vh - var(--topbar-height));
+            transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        /* ─── CARDS ───────────────────────────────────── */
+        .card-dark {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+        }
+        .card-dark .card-header-custom {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .card-dark .card-title {
+            font-size: 14px; font-weight: 600;
+            color: var(--text-primary);
+        }
+        .card-dark .card-subtitle {
+            font-size: 12px; color: var(--text-secondary);
+        }
+
+        /* ─── STAT CARDS ──────────────────────────────── */
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(37,99,235,0.4);
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 80px; height: 80px;
+            border-radius: 0 0 0 80px;
+            opacity: 0.08;
+        }
+        .stat-card.blue::before { background: var(--accent-blue); }
+        .stat-card.green::before { background: var(--accent-green); }
+        .stat-card.yellow::before { background: var(--accent-yellow); }
+        .stat-card.red::before { background: var(--accent-red); }
+        .stat-card.purple::before { background: var(--accent-purple); }
+
+        .stat-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            margin-bottom: 14px;
+        }
+        .stat-icon.blue { background: rgba(37,99,235,0.15); color: var(--accent-blue-light); }
+        .stat-icon.green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+        .stat-icon.yellow { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+        .stat-icon.red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+        .stat-icon.purple { background: rgba(124,58,237,0.15); color: var(--accent-purple); }
+        .stat-icon.cyan { background: rgba(6,182,212,0.15); color: var(--accent-cyan); }
+
+        .stat-value {
+            font-size: 28px; font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .stat-label {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .stat-change {
+            font-size: 11.5px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .stat-change.up { color: var(--accent-green); }
+        .stat-change.down { color: var(--accent-red); }
+
+        /* ─── TABLE ───────────────────────────────────── */
+        .table-dark-custom {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table-dark-custom th {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        .table-dark-custom td {
+            padding: 12px 14px;
+            color: var(--text-primary);
+            font-size: 13px;
+            border-bottom: 1px solid rgba(48,54,61,0.5);
+            vertical-align: middle;
+        }
+        .table-dark-custom tr:hover td { background: var(--bg-hover); }
+        .table-dark-custom tr:last-child td { border-bottom: none; }
+
+        /* ─── BADGES/STATUS ───────────────────────────── */
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-new { background: rgba(37,99,235,0.15); color: var(--accent-blue-light); }
+        .badge-progress { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
+        .badge-resolved { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+        .badge-rejected { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+
+        /* ─── BUTTONS ─────────────────────────────────── */
+        .btn-primary-dark {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .btn-primary-dark:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .btn-ghost {
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-ghost:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+
+        /* ─── ALERTS ──────────────────────────────────── */
+        .flash-container {
+            position: fixed;
+            top: 80px; right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 360px;
+        }
+        .flash-msg {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex; align-items: center; gap: 10px;
+            font-size: 13px;
+            animation: slideIn 0.3s ease;
+        }
+        .flash-msg.error { border-left: 3px solid var(--accent-red); }
+        .flash-msg.success { border-left: 3px solid var(--accent-green); }
+        .flash-msg.info { border-left: 3px solid var(--accent-blue-light); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ─── SCROLLBAR ───────────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ─── PAGE HEADER ─────────────────────────────── */
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            font-size: 22px; font-weight: 700;
+            color: var(--text-primary);
+        }
+        .page-header p {
+            font-size: 13px; color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash-msg {{ category }}">
+        {% if category == 'error' %}<i class="bi bi-x-circle text-danger"></i>
+        {% elif category == 'success' %}<i class="bi bi-check-circle text-success"></i>
+        {% else %}<i class="bi bi-info-circle text-info"></i>{% endif %}
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+        <div class="logo-icon">📋</div>
+        <div class="logo-text">
+            <div style="font-size:13px;font-weight:700;">Si ASPIRA</div>
+            <div style="font-size:10px;color:var(--text-secondary);font-weight:400;">Panel Admin</div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">UTAMA</div>
+        <a href="{{ url_for('dashboard.index') }}"
+           class="nav-item {% if request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-grid-1x2"></i>
+            <span class="nav-label">Dashboard</span>
+        </a>
+
+        <a href="{{ url_for('complaints.index') }}"
+           class="nav-item {% if request.endpoint and 'complaints' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-file-earmark-text"></i>
+            <span class="nav-label">Pengaduan</span>
+            <span class="nav-badge" id="sidebar-complaint-count" style="display:none;"></span>
+        </a>
+
+        <div class="nav-section-label" style="margin-top:8px;">MANAJEMEN</div>
+        <a href="{{ url_for('users.index') }}"
+           class="nav-item {% if request.endpoint and 'users' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-people"></i>
+            <span class="nav-label">Pengguna</span>
+        </a>
+
+        <a href="{{ url_for('reports.index') }}"
+           class="nav-item {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-bar-chart-line"></i>
+            <span class="nav-label">Laporan</span>
+        </a>
+
+        <div class="nav-section-label" style="margin-top:8px;">SISTEM</div>
+        <a href="{{ url_for('settings.index') }}"
+           class="nav-item {% if request.endpoint and 'settings' in request.endpoint %}active{% endif %}">
+            <i class="bi bi-gear"></i>
+            <span class="nav-label">Pengaturan</span>
+        </a>
+    </nav>
+
+    <!-- Bottom: Profile -->
+    <div class="sidebar-bottom">
+        <div class="nav-item" style="gap:10px;">
+            <div style="width:32px;height:32px;min-width:32px;border-radius:8px;
+                        background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:13px;font-weight:700;overflow:hidden;" id="sidebar-avatar">
+                {% if current_user.is_authenticated and current_user.avatar %}
+                <img src="/static/uploads/avatars/{{ current_user.avatar }}" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                <span id="sidebar-avatar-initial">{{ current_user.name[0].upper() if current_user.is_authenticated and current_user.name else 'A' }}</span>
+                {% endif %}
+            </div>
+            <div class="nav-label" style="opacity:0;" id="sidebar-profile">
+                <div style="font-size:12px;font-weight:600;color:var(--text-primary);" id="sidebar-admin-name">{{ current_user.name if current_user.is_authenticated else 'Admin' }}</div>
+                <div style="font-size:11px;color:var(--text-muted);">{{ current_user.role.capitalize() if current_user.is_authenticated and current_user.role else 'Superadmin' }}</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Topbar -->
+<header class="topbar">
+    <div class="topbar-left">
+        <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+        <div class="topbar-subtitle">{% block page_subtitle %}Selamat datang di Panel Admin{% endblock %}</div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Cari pengaduan, mahasiswa...">
+    </div>
+
+    <!-- Actions -->
+    <div class="topbar-actions">
+        <!-- Notification Bell Dropdown -->
+        <div class="dropdown">
+            <button class="topbar-btn" id="notifBellBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Notifikasi Pengaduan">
+                <i class="bi bi-bell" id="bellIcon" style="font-size:16px;"></i>
+                <span class="badge-count" id="bellBadgeCount" style="display:none;">0</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end p-0" id="notifDropdownMenu"
+                 style="width:360px;background:var(--bg-card);border:1px solid var(--border-color);
+                        border-radius:14px;box-shadow:0 12px 36px rgba(0,0,0,0.5);overflow:hidden;">
+                <div style="padding:14px 16px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;">
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
+                            <i class="bi bi-bell-fill" style="color:var(--accent-blue-light);"></i> Notifikasi Pengaduan
+                        </div>
+                        <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;" id="notifCountText">Memuat notifikasi...</div>
+                    </div>
+                    <button type="button" class="btn-ghost" onclick="silenceCurrentNotifications()" style="font-size:11px;padding:3px 8px;border-radius:6px;">
+                        Tandai Dibaca
+                    </button>
+                </div>
+                
+                <div id="notifFeedItems" style="max-height:340px;overflow-y:auto;padding:4px 0;">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <div style="padding:10px 14px;border-top:1px solid var(--border-color);text-align:center;background:rgba(22,27,34,0.4);">
+                    <a href="/complaints?status=baru" style="font-size:12px;color:var(--accent-blue-light);text-decoration:none;font-weight:500;">
+                        Kelola Semua Pengaduan Baru <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="dropdown">
+            <div class="admin-avatar" data-bs-toggle="dropdown" id="topbar-avatar" style="overflow:hidden;">
+                {% if current_user.is_authenticated and current_user.avatar %}
+                <img src="/static/uploads/avatars/{{ current_user.avatar }}" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                <span id="topbar-avatar-initial">{{ current_user.name[0].upper() if current_user.is_authenticated and current_user.name else 'A' }}</span>
+                {% endif %}
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end"
+                style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:8px;">
+                <li><span class="dropdown-item-text" style="color:var(--text-muted);font-size:11px;padding:6px 12px;">
+                    Si ASPIRA Admin</span></li>
+                <li><hr class="dropdown-divider" style="border-color:var(--border-color);"></li>
+                <li><a class="dropdown-item" href="{{ url_for('settings.index') }}"
+                       style="color:var(--text-primary);border-radius:8px;font-size:13px;">
+                    <i class="bi bi-person me-2"></i>Profil</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"
+                       style="color:var(--accent-red);border-radius:8px;font-size:13px;">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="application/json" id="adminConfigData">
+{
+    "soundUrl": "{{ url_for('static', filename='uploads/audio/' + (current_user.notif_sound_file or 'default_chime.mp3')) if current_user.is_authenticated else '/static/uploads/audio/default_chime.mp3' }}",
+    "soundEnabled": {{ 'true' if (current_user.is_authenticated and current_user.notif_sound_enabled != False) else 'false' }}
+}
+</script>
+
+<script>
+
+    // Sidebar show profile label on hover
+    const sidebar = document.getElementById('sidebar');
+    const profileLabel = document.getElementById('sidebar-profile');
+    sidebar.addEventListener('mouseenter', () => {
+        if(profileLabel) profileLabel.style.opacity = '1';
+    });
+    sidebar.addEventListener('mouseleave', () => {
+        if(profileLabel) profileLabel.style.opacity = '0';
+    });
+
+    // Auto dismiss flash messages
+    setTimeout(() => {
+        document.querySelectorAll('.flash-msg').forEach(el => {
+            el.style.transition = 'opacity 0.4s';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 400);
+        });
+    }, 4000);
+
+    // Dynamic sidebar complaint badge
+    (function updateSidebarBadge() {
+        const badge = document.getElementById('sidebar-complaint-count');
+        if (!badge) return;
+        fetch('/complaints/stats')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data) return;
+                const total = (data.total || 0);
+                if (total > 0) {
+                    badge.textContent = total;
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(() => {});
+    })();
+
+    // ─── REAL-TIME ADMIN NOTIFICATION & AUDIO ALERT SYSTEM ─────────────────────────
+    let lastSeenNewCount = null;
+    const __cfg = JSON.parse(document.getElementById('adminConfigData').textContent);
+    let lastKnownSoundUrl = __cfg.soundUrl || '/static/uploads/audio/default_chime.mp3';
+    let isSoundEnabled = __cfg.soundEnabled !== false;
+
+    if (!localStorage.getItem('admin_notif_sound_url')) {
+        localStorage.setItem('admin_notif_sound_url', lastKnownSoundUrl);
+    }
+    if (localStorage.getItem('admin_notif_sound_enabled') === null) {
+        localStorage.setItem('admin_notif_sound_enabled', isSoundEnabled);
+    }
+
+    window.playAdminSoundAlert = function() {
+        const enabled = localStorage.getItem('admin_notif_sound_enabled') !== 'false';
+        if (!enabled) return;
+
+        const url = localStorage.getItem('admin_notif_sound_url') || lastKnownSoundUrl;
+        try {
+            const audio = new Audio(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+            audio.volume = 0.9;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.log('Audio autoplay prevented by browser until interaction:', err.message);
+                });
+            }
+        } catch(e) {
+            console.error('Audio play error:', e);
+        }
+    };
+
+    function pollAdminNotifications() {
+        fetch('/settings/notifications/feed')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data) return;
+
+                const bellIcon = document.getElementById('bellIcon');
+                const bellBadge = document.getElementById('bellBadgeCount');
+                const notifText = document.getElementById('notifCountText');
+                const feedContainer = document.getElementById('notifFeedItems');
+
+                if (data.sound_url) {
+                    lastKnownSoundUrl = data.sound_url;
+                    localStorage.setItem('admin_notif_sound_url', data.sound_url);
+                }
+                if (typeof data.sound_enabled === 'boolean') {
+                    isSoundEnabled = data.sound_enabled;
+                    localStorage.setItem('admin_notif_sound_enabled', data.sound_enabled);
+                }
+
+                const totalNew = data.total_new || 0;
+
+                // Play sound if a new complaint arrived!
+                if (lastSeenNewCount !== null && totalNew > lastSeenNewCount) {
+                    window.playAdminSoundAlert();
+                }
+                lastSeenNewCount = totalNew;
+
+                // Animate bell & show badge
+                if (totalNew > 0) {
+                    if (bellIcon) bellIcon.classList.add('bell-ringing');
+                    if (bellBadge) {
+                        bellBadge.textContent = totalNew;
+                        bellBadge.style.display = 'flex';
+                    }
+                    if (notifText) notifText.textContent = `${totalNew} pengaduan baru menunggu respon`;
+                } else {
+                    if (bellIcon) bellIcon.classList.remove('bell-ringing');
+                    if (bellBadge) bellBadge.style.display = 'none';
+                    if (notifText) notifText.textContent = `Tidak ada pengaduan baru`;
+                }
+
+                // Render notification items in dropdown
+                if (feedContainer) {
+                    if (!data.items || data.items.length === 0) {
+                        feedContainer.innerHTML = `
+                            <div style="text-align:center;padding:36px 16px;color:var(--text-muted);">
+                                <i class="bi bi-bell-slash" style="font-size:26px;display:block;margin-bottom:6px;opacity:0.4;"></i>
+                                <span style="font-size:12px;">Belum ada pengaduan baru</span>
+                            </div>
+                        `;
+                    } else {
+                        feedContainer.innerHTML = data.items.map(item => `
+                            <a href="/complaints?search=${encodeURIComponent(item.ticket_number)}" 
+                               style="display:flex;align-items:start;gap:12px;padding:10px 16px;text-decoration:none;
+                                      border-bottom:1px solid rgba(48,54,61,0.4);transition:background 0.2s;
+                                      background:${item.is_new ? 'rgba(37,99,235,0.08)' : 'transparent'};"
+                               onmouseover="this.style.background='var(--bg-hover)'"
+                               onmouseout="this.style.background='${item.is_new ? 'rgba(37,99,235,0.08)' : 'transparent'}'">
+                                <div style="width:34px;height:34px;border-radius:10px;
+                                            background:${item.is_new ? 'rgba(37,99,235,0.2)' : 'var(--bg-secondary)'};
+                                            color:${item.is_new ? 'var(--accent-blue-light)' : 'var(--text-secondary)'};
+                                            display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i class="bi bi-file-earmark-text" style="font-size:16px;"></i>
+                                </div>
+                                <div style="flex:1;overflow:hidden;">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                                        <span style="font-size:11px;font-weight:600;color:var(--accent-blue-light);">${item.ticket_number}</span>
+                                        <span style="font-size:10px;color:var(--text-muted);">${item.time}</span>
+                                    </div>
+                                    <div style="font-size:12px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">
+                                        ${item.title}
+                                    </div>
+                                    <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">
+                                        ${item.user_name} • <span style="color:var(--text-muted);">${item.category}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        `).join('');
+                    }
+                }
+            })
+            .catch(() => {});
+    }
+
+    window.silenceCurrentNotifications = function() {
+        const bellIcon = document.getElementById('bellIcon');
+        const bellBadge = document.getElementById('bellBadgeCount');
+        if (bellIcon) bellIcon.classList.remove('bell-ringing');
+        if (bellBadge) bellBadge.style.display = 'none';
+    };
+
+    pollAdminNotifications();
+    setInterval(pollAdminNotifications, 5000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

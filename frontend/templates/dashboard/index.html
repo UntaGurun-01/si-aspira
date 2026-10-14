@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - SI Pengaduan Mahasiswa{% endblock %}
+
+{% block breadcrumb %}
+<i class="bi bi-grid-fill me-2" style="color:var(--accent-blue);"></i>
+<span class="breadcrumb-item-text">Dashboard</span>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="welcome-banner animate-on-scroll">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7 col-md-7">
+            <div class="welcome-badge mb-2">
+                <i class="bi bi-shield-check-fill text-primary"></i> ASPIRA
+            </div>
+            <h2 class="welcome-title">
+                Halo, <span class="text-gradient">{{ current_user.full_name.split()[0] }}!</span> 👋
+            </h2>
+            <p class="welcome-desc">
+                Sampaikan aspirasi, keluhan, atau pengaduanmu terkait layanan akademik, sarana prasarana, dan operasional di Prodi Teknik Informatika.
+                Bersama kita wujudkan lingkungan kampus yang lebih baik.
+            </p>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <a href="{{ url_for('complaint.create_complaint') }}" class="btn-primary-custom" id="btn-hero-create">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    Buat Pengaduan Baru
+                </a>
+                <a href="{{ url_for('complaint.list_complaints') }}" class="btn-glass" id="btn-hero-history">
+                    <i class="bi bi-clock-history"></i>
+                    Riwayat Laporan
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-5 col-md-5 d-none d-md-flex justify-content-end align-items-center">
+            <div class="welcome-quote-plain">
+                <i class="bi bi-quote quote-icon"></i>
+                <p class="quote-text">"Perubahan besar berawal dari suara kecil seperti pengaduanmu."</p>
+                <span class="quote-sub">— Prodi Teknik Informatika</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3 animate-on-scroll">
+        <div class="stat-card stat-total">
+            <div class="stat-icon-wrapper">
+                <i class="bi bi-clipboard2-data-fill"></i>
+            </div>
+            <div class="stat-value">{{ total }}</div>
+            <div class="stat-label">Total Pengaduan</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 animate-on-scroll">
+        <div class="stat-card stat-menunggu">
+            <div class="stat-icon-wrapper">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="stat-value">{{ menunggu }}</div>
+            <div class="stat-label">Menunggu Respons</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 animate-on-scroll">
+        <div class="stat-card stat-diproses">
+            <div class="stat-icon-wrapper">
+                <i class="bi bi-gear-fill"></i>
+            </div>
+            <div class="stat-value">{{ diproses }}</div>
+            <div class="stat-label">Sedang Diproses</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 animate-on-scroll">
+        <div class="stat-card stat-selesai">
+            <div class="stat-icon-wrapper">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="stat-value">{{ selesai }}</div>
+            <div class="stat-label">Selesai</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Recent Complaints -->
+    <div class="col-lg-8">
+        <div class="card-glass">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h3 class="section-title mb-0">
+                    <i class="bi bi-clock-history"></i>
+                    Pengaduan Terbaru
+                </h3>
+                <a href="{{ url_for('complaint.list_complaints') }}" class="btn-glass" style="padding:7px 14px;font-size:0.8rem;">
+                    Lihat Semua <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            {% if recent_complaints %}
+                {% for complaint in recent_complaints %}
+                <a href="{{ url_for('complaint.detail', id=complaint.id) }}" class="complaint-row" style="text-decoration:none;">
+                    <div class="complaint-icon">
+                        <i class="bi {{ complaint.category_icon }}"></i>
+                    </div>
+                    <div class="complaint-info">
+                        <p class="complaint-title">{{ complaint.title }}</p>
+                        <div class="complaint-meta">
+                            <span class="complaint-ticket">{{ complaint.ticket_number }}</span>
+                            <span class="category-badge">{{ complaint.category_label }}</span>
+                            <span><i class="bi bi-calendar3 me-1"></i>{{ complaint.created_at.strftime('%d %b %Y') }}</span>
+                        </div>
+                    </div>
+                    <div class="d-none d-sm-flex flex-column align-items-end gap-2">
+                        <span class="status-badge status-{{ complaint.status }}">{{ complaint.status_label }}</span>
+                    </div>
+                    <i class="bi bi-chevron-right" style="color:var(--text-muted);font-size:0.875rem;"></i>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                    <p class="empty-title">Belum ada pengaduan</p>
+                    <p class="empty-desc">Mulai buat pengaduan pertamamu sekarang</p>
+                    <a href="{{ url_for('complaint.create_complaint') }}" class="btn-primary-custom">
+                        <i class="bi bi-plus-circle"></i>
+                        Buat Pengaduan
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Sidebar Panel -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="card-glass mb-3">
+            <h3 class="section-title"><i class="bi bi-lightning-fill"></i> Menu Cepat</h3>
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="{{ url_for('complaint.create_complaint') }}" class="quick-action-btn" id="btn-buat-pengaduan">
+                        <i class="bi bi-plus-circle-fill quick-action-icon" style="color:var(--accent-blue);"></i>
+                        <span>Buat Pengaduan</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('complaint.list_complaints') }}" class="quick-action-btn" id="btn-pengaduan-saya">
+                        <i class="bi bi-list-ul quick-action-icon" style="color:var(--accent-purple);"></i>
+                        <span>Pengaduan Saya</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('complaint.list_complaints') }}?status=menunggu" class="quick-action-btn" id="btn-cek-status">
+                        <i class="bi bi-search quick-action-icon" style="color:var(--accent-cyan);"></i>
+                        <span>Cek Status</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('profile.index') }}" class="quick-action-btn" id="btn-profil">
+                        <i class="bi bi-person-circle quick-action-icon" style="color:var(--accent-orange);"></i>
+                        <span>Profil Saya</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="card-glass mb-3" style="background:rgba(59,130,246,0.05);border-color:rgba(59,130,246,0.15);">
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+                <i class="bi bi-megaphone-fill" style="color:var(--accent-blue);font-size:1.1rem;margin-top:2px;flex-shrink:0;"></i>
+                <div>
+                    <p style="font-size:0.8rem;font-weight:600;color:var(--text-primary);margin:0 0 6px;">Informasi Penting</p>
+                    <p style="font-size:0.78rem;color:var(--text-secondary);margin:0;line-height:1.6;">
+                        Pengaduan yang disampaikan harus berisi informasi yang jelas dan valid agar dapat ditindaklanjuti dengan cepat.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="card-glass">
+            <h3 class="section-title"><i class="bi bi-tags-fill"></i> Kategori Pengaduan</h3>
+            {% set cat_icons = {
+                'Akademik': 'bi-book-fill',
+                'Dosen & Pengajaran': 'bi-person-video3',
+                'Fasilitas': 'bi-building',
+                'Laboratorium': 'bi-cpu-fill',
+                'Administrasi': 'bi-file-earmark-text-fill',
+                'Saran & Kritik': 'bi-lightbulb-fill',
+                'Lainnya': 'bi-question-circle-fill'
+            } %}
+            {% set cat_keys = {
+                'Akademik': 'akademik',
+                'Dosen & Pengajaran': 'dosen',
+                'Fasilitas': 'fasilitas',
+                'Laboratorium': 'laboratorium',
+                'Administrasi': 'administrasi',
+                'Saran & Kritik': 'saran',
+                'Lainnya': 'lainnya'
+            } %}
+            {% for label, icon in cat_icons.items() %}
+            <a href="{{ url_for('complaint.list_complaints') }}?category={{ cat_keys[label] }}"
+               style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-sm);color:var(--text-secondary);font-size:0.85rem;transition:var(--transition);margin-bottom:4px;"
+               class="category-link-item">
+                <i class="bi {{ icon }}" style="color:var(--accent-blue);width:18px;text-align:center;"></i>
+                <span>{{ label }}</span>
+                <i class="bi bi-chevron-right ms-auto" style="font-size:0.75rem;"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.quick-action-btn {
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:8px;padding:16px 8px;border-radius:var(--radius-md);
+    border:1px solid var(--border-color);background:var(--glass-bg);
+    color:var(--text-secondary);font-size:0.78rem;font-weight:500;
+    text-align:center;transition:var(--transition);text-decoration:none;
+    min-height:80px;
+}
+.quick-action-btn:hover {
+    background:var(--glass-bg-hover);border-color:rgba(59,130,246,0.25);
+    color:var(--text-primary);transform:translateY(-2px);
+}
+.quick-action-icon { font-size:1.4rem; }
+.category-link-item:hover { background:var(--glass-bg);color:var(--text-primary); }
+</style>
+{% endblock %}

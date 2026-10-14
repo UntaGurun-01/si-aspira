@@ -1,0 +1,650 @@
+{% extends 'base.html' %}
+{% block title %}Tentang Web - SI PENGADU Teknik Informatika{% endblock %}
+
+{% block breadcrumb %}
+<i class="bi bi-info-circle-fill me-2" style="color:var(--accent-blue);"></i>
+<span class="breadcrumb-item-text">Tentang Web</span>
+{% endblock %}
+
+{% block content %}
+<!-- Header Hero -->
+<div class="card-glass mb-4 p-4 p-md-5 position-relative overflow-hidden" style="border: 1px solid rgba(59, 130, 246, 0.25); background: linear-gradient(135deg, rgba(16, 27, 54, 0.95) 0%, rgba(12, 20, 42, 0.95) 100%);">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+        <span class="badge" style="background:rgba(59, 130, 246, 0.15); color:var(--accent-blue-light); border:1px solid rgba(59, 130, 246, 0.3); padding:6px 14px; border-radius:99px; font-size:0.8rem; font-weight:600;">
+            <i class="bi bi-shield-check me-1"></i> Dokumentasi Resmi Sistem
+        </span>
+        <span class="badge" style="background:rgba(139, 92, 246, 0.15); color:#c4b5fd; border:1px solid rgba(139, 92, 246, 0.3); padding:6px 14px; border-radius:99px; font-size:0.8rem; font-weight:600;">
+            <i class="bi bi-mortarboard-fill me-1"></i> Prodi Teknik Informatika
+        </span>
+    </div>
+    
+    <h1 style="font-size:2.3rem; font-weight:800; margin:10px 0; letter-spacing:-0.5px;">
+        Si ASPIRA
+    </h1>
+    <h2 style="font-size:1.15rem; font-weight:500; color:var(--accent-cyan); margin-bottom:14px;">
+        Sistem Informasi Aspirasi dan Sarana Pengaduan Informatika Responsif Akademik
+    </h2>
+    <p style="font-size:0.95rem; color:rgba(255, 255, 255, 0.75); max-width:760px; line-height:1.7; margin-bottom:16px;">
+        Platform komunikasi digital yang terstruktur, transparan, dan terpusat antara mahasiswa dan pengelola program studi dengan semangat <strong class="text-white">“Suaramu, Perubahan Kita”</strong>.
+    </p>
+
+    <div class="d-flex flex-wrap gap-3 pt-1">
+        <div class="d-flex align-items-center gap-2" style="background:rgba(255,255,255,0.04); padding:7px 14px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.82rem;">
+            <i class="bi bi-people-fill text-primary"></i> 4 Tim Pengembang
+        </div>
+        <div class="d-flex align-items-center gap-2" style="background:rgba(255,255,255,0.04); padding:7px 14px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.82rem;">
+            <i class="bi bi-journal-check text-success"></i> 13 Bab Spesifikasi Lengkap
+        </div>
+        <div class="d-flex align-items-center gap-2" style="background:rgba(255,255,255,0.04); padding:7px 14px; border-radius:var(--radius-md); border:1px solid var(--border-color); font-size:0.82rem;">
+            <i class="bi bi-shield-lock-fill" style="color:var(--accent-purple);"></i> Aman & Terdokumentasi
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Meet the Developers -->
+    <div class="col-lg-4">
+        <div class="card-glass p-3 p-md-4 sticky-top" style="top:90px;">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-3" style="border-bottom:1px solid var(--border-color);">
+                <div class="about-icon-badge" style="background:rgba(59,130,246,0.18); color:var(--accent-blue-light); width:38px; height:38px; font-size:1.1rem;">
+                    <i class="bi bi-code-square"></i>
+                </div>
+                <div>
+                    <h3 class="m-0" style="font-size:1.15rem; font-weight:700;">Meet the Developers</h3>
+                    <small class="text-muted" style="font-size:0.75rem;">Tim Pengembang Si ASPIRA</small>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+                <!-- 1. Frontend Developer -->
+                <div class="dev-card p-3 rounded-3">
+                    <div class="d-flex gap-3 align-items-start">
+                        <!-- Bingkai Foto Persegi 1:1 (Ganti URL file gambar di bawah) -->
+                        <div class="dev-photo-frame flex-shrink-0">
+                            <!-- Ganti src="/static/img/developers/frontend.svg" dengan nama file foto kamu (misal: frontend.jpg) -->
+                            <img src="{{ url_for('static', filename='img/developers/frontend.jpeg') }}"
+                                 alt="Frontend Developer" class="dev-photo-img" id="dev-photo-1">
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <span class="dev-role-badge badge-frontend">
+                                <i class="bi bi-code-slash me-1"></i> Frontend Developer
+                            </span>
+                            <h5 class="dev-name mt-1 mb-1">Agam Al Hakim Hasibuan</h5>
+                            <p class="dev-desc mb-0">
+                                Merancang antarmuka pengguna responsif, styling tema dark modern, animasi interaktif, dan kenyamanan navigasi pengguna.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Backend Developer -->
+                <div class="dev-card p-3 rounded-3">
+                    <div class="d-flex gap-3 align-items-start">
+                        <!-- Bingkai Foto Persegi 1:1 (Ganti URL file gambar di bawah) -->
+                        <div class="dev-photo-frame flex-shrink-0">
+                            <!-- Ganti src="/static/img/developers/backend.svg" dengan nama file foto kamu (misal: backend.jpg) -->
+                            <img src="{{ url_for('static', filename='img/developers/Developer Frontend.png') }}"
+                                 alt="Backend Developer" class="dev-photo-img" id="dev-photo-2">
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <span class="dev-role-badge badge-backend">
+                                <i class="bi bi-server me-1"></i> Backend Developer
+                            </span>
+                            <h5 class="dev-name mt-1 mb-1">Habil Maulana</h5>
+                            <p class="dev-desc mb-0">
+                                Mengembangkan logika server Python/Flask, manajemen database relasional, autentikasi sesi, dan pemrosesan alur tiket.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Full-Stack Developer -->
+                <div class="dev-card p-3 rounded-3">
+                    <div class="d-flex gap-3 align-items-start">
+                        <!-- Bingkai Foto Persegi 1:1 (Ganti URL file gambar di bawah) -->
+                        <div class="dev-photo-frame flex-shrink-0">
+                            <!-- Ganti src="/static/img/developers/fullstack.svg" dengan nama file foto kamu (misal: fullstack.jpg) -->
+                            <img src="{{ url_for('static', filename='img/developers/Full-Stack Developer.png') }}"
+                                 alt="Full-Stack Developer" class="dev-photo-img" id="dev-photo-3">
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <span class="dev-role-badge badge-fullstack">
+                                <i class="bi bi-layers-fill me-1"></i> Full-Stack Developer
+                            </span>
+                            <h5 class="dev-name mt-1 mb-1">M.Totti Airindo</h5>
+                            <p class="dev-desc mb-0">
+                                Menjembatani integrasi frontend dan backend, optimasi performa sistem, validasi keamanan, dan pengujian fitur end-to-end.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. UI/UX Designer -->
+                <div class="dev-card p-3 rounded-3">
+                    <div class="d-flex gap-3 align-items-start">
+                        <!-- Bingkai Foto Persegi 1:1 (Ganti URL file gambar di bawah) -->
+                        <div class="dev-photo-frame flex-shrink-0">
+                            <!-- Ganti src="/static/img/developers/uiux.svg" dengan nama file foto kamu (misal: uiux.jpg) -->
+                            <img src="{{ url_for('static', filename='img/developers/ui ux.png') }}"
+                                 alt="UI/UX Designer" class="dev-photo-img" id="dev-photo-4">
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <span class="dev-role-badge badge-uiux">
+                                <i class="bi bi-palette-fill me-1"></i> UI/UX Designer
+                            </span>
+                            <h5 class="dev-name mt-1 mb-1">M.Dzuryadi</h5>
+                            <p class="dev-desc mb-0">
+                                Menyusun wireframe, rancangan prototipe antarmuka, pemilihan palet warna dark navy, tata letak visual, dan pengalaman pengguna.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catatan Pengembang -->
+            <div class="mt-3 pt-3" style="border-top:1px solid var(--border-color); font-size:0.75rem; color:var(--text-muted);">
+                <i class="bi bi-info-circle me-1 text-primary"></i> 
+               </code>.
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: 1 Card untuk Seluruh Deskripsi Lengkap -->
+    <div class="col-lg-8">
+        <div class="card-glass p-4 p-md-5">
+            <!-- Header Kartu Deskripsi Tunggal -->
+            <div class="mb-4 pb-3" style="border-bottom:1px solid var(--border-color);">
+                <span class="text-primary fw-bold text-uppercase" style="font-size:0.75rem; letter-spacing:1px;">
+                    <i class="bi bi-book-half me-1"></i> DOKUMENTASI & PROFIL SISTEM
+                </span>
+                <h2 style="font-size:1.65rem; font-weight:800; margin:6px 0 4px;">
+                    Deskripsi Lengkap Si ASPIRA
+                </h2>
+                <p class="text-muted small m-0">
+                    Spesifikasi komprehensif rancangan Sistem Informasi Pengaduan Mahasiswa Teknik Informatika.
+                </p>
+            </div>
+
+            <!-- BAGIAN 1: Deskripsi Umum -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size:0.75rem;">1</span>
+                    <h3 class="doc-heading m-0">Deskripsi Umum</h3>
+                </div>
+                <div class="doc-text">
+                    <p>
+                        <strong>Si ASPIRA</strong> merupakan sistem informasi berbasis website yang dirancang untuk memfasilitasi mahasiswa Program Studi Teknik Informatika dalam menyampaikan pengaduan, keluhan, aspirasi, saran, dan kritik terkait kegiatan akademik maupun layanan di lingkungan program studi.
+                    </p>
+                    <p>
+                        Sistem ini bertujuan menyediakan sarana komunikasi digital yang terstruktur antara mahasiswa dan pihak pengelola program studi. Melalui Si ASPIRA, mahasiswa dapat menyampaikan permasalahan secara lebih mudah, memantau perkembangan penanganan laporan, serta mengetahui tanggapan yang diberikan oleh petugas yang berwenang.
+                    </p>
+                    <p class="mb-0">
+                        Si ASPIRA dikembangkan dengan mengutamakan kemudahan penggunaan, keteraturan pengelolaan laporan, keamanan data, dan transparansi proses penanganan pengaduan. Dengan adanya sistem ini, proses penyampaian aspirasi tidak hanya bergantung pada komunikasi secara langsung, tetapi juga dapat dilakukan melalui platform digital yang terdokumentasi.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 2: Latar Belakang -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-warning-subtle text-warning fw-bold" style="font-size:0.75rem;">2</span>
+                    <h3 class="doc-heading m-0">Latar Belakang</h3>
+                </div>
+                <div class="doc-text">
+                    <p>
+                        Dalam lingkungan perguruan tinggi, mahasiswa dapat menghadapi berbagai permasalahan yang berkaitan dengan proses perkuliahan, layanan administrasi, fasilitas pembelajaran, laboratorium, jaringan internet, maupun aspek lain yang mendukung kegiatan akademik.
+                    </p>
+                    <p>
+                        Tanpa sistem pengaduan yang terstruktur, penyampaian keluhan berpotensi mengalami kendala, seperti kesulitan mengetahui pihak yang bertanggung jawab, tidak adanya dokumentasi laporan yang terpusat, serta terbatasnya informasi mengenai perkembangan penanganan pengaduan.
+                    </p>
+                    <p class="mb-0">
+                        Oleh karena itu, Si ASPIRA dirancang sebagai sarana digital yang membantu mahasiswa menyampaikan permasalahan dan membantu pihak program studi mengelola laporan secara lebih sistematis, terorganisasi, dan terdokumentasi.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 3: Tujuan Pengembangan -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-success-subtle text-success fw-bold" style="font-size:0.75rem;">3</span>
+                    <h3 class="doc-heading m-0">Tujuan Pengembangan</h3>
+                </div>
+                <div class="doc-text">
+                    <p>Pengembangan Si ASPIRA memiliki beberapa tujuan utama, yaitu:</p>
+                    <ol class="doc-list-styled">
+                        <li>Mempermudah mahasiswa dalam menyampaikan pengaduan, aspirasi, saran, dan kritik.</li>
+                        <li>Menyediakan media pengaduan yang terpusat dan mudah diakses.</li>
+                        <li>Membantu petugas mengelola, memverifikasi, dan menindaklanjuti laporan mahasiswa.</li>
+                        <li>Memberikan informasi mengenai status dan perkembangan penanganan pengaduan.</li>
+                        <li>Meningkatkan kualitas komunikasi antara mahasiswa dan pihak program studi.</li>
+                        <li>Mendukung evaluasi dan peningkatan kualitas layanan akademik berdasarkan laporan yang masuk.</li>
+                        <li>Menyediakan dokumentasi dan rekapitulasi pengaduan sebagai bahan evaluasi program studi.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 4: Pengguna Sistem -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-info-subtle text-cyan fw-bold" style="font-size:0.75rem; color:var(--accent-cyan);">4</span>
+                    <h3 class="doc-heading m-0">Pengguna Sistem</h3>
+                </div>
+                <div class="doc-text">
+                    <p>Si ASPIRA memiliki dua kelompok pengguna utama.</p>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3" style="background:rgba(59,130,246,0.06); border:1px solid rgba(59,130,246,0.2);">
+                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-person-fill me-1"></i> A. Mahasiswa</h6>
+                                <p class="small text-secondary mb-0" style="line-height:1.6;">
+                                    Mahasiswa merupakan pengguna yang menyampaikan pengaduan melalui sistem. Mahasiswa dapat membuat laporan, melampirkan bukti pendukung, melihat riwayat pengaduan, memantau status penanganan, membaca tanggapan petugas, dan mengelola informasi akun yang diizinkan.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3" style="background:rgba(139,92,246,0.06); border:1px solid rgba(139,92,246,0.2);">
+                                <h6 class="fw-bold text-purple mb-2" style="color:var(--accent-purple);"><i class="bi bi-shield-lock-fill me-1"></i> B. Admin atau Petugas Program Studi</h6>
+                                <p class="small text-secondary mb-0" style="line-height:1.6;">
+                                    Admin atau petugas merupakan pihak yang memiliki kewenangan untuk mengelola pengaduan. Pengguna ini dapat memeriksa laporan masuk, menentukan tindak lanjut, memperbarui status, memberikan tanggapan, mengelola kategori pengaduan, serta melihat rekapitulasi laporan sesuai hak aksesnya.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">
+                        <i class="bi bi-lock me-1 text-primary"></i> Hak akses setiap pengguna dibatasi berdasarkan peran dan kewenangannya untuk menjaga keamanan serta kerahasiaan informasi.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 5: Fitur Utama -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size:0.75rem;">5</span>
+                    <h3 class="doc-heading m-0">Fitur Utama</h3>
+                </div>
+                <div class="doc-text">
+                    <div class="sub-feature-block mb-3">
+                        <h6 class="sub-feature-title">A. Dashboard Mahasiswa</h6>
+                        <p class="sub-feature-desc">Dashboard merupakan halaman utama yang ditampilkan setelah mahasiswa berhasil masuk ke sistem. Halaman ini menyajikan ringkasan pengaduan, statistik status laporan, daftar pengaduan terbaru, serta akses cepat menuju formulir pengaduan. Dashboard dirancang menggunakan antarmuka modern dengan tema dark premium agar informasi mudah dibaca dan navigasi terasa nyaman.</p>
+                    </div>
+
+                    <div class="sub-feature-block mb-3">
+                        <h6 class="sub-feature-title">B. Formulir Pengaduan</h6>
+                        <p class="sub-feature-desc">Fitur ini memungkinkan mahasiswa menyampaikan laporan dengan mengisi informasi berupa judul, kategori, deskripsi permasalahan, serta lampiran pendukung apabila diperlukan. Setelah laporan berhasil disimpan, sistem menghasilkan nomor tiket pengaduan sebagai identitas unik yang dapat digunakan untuk menemukan dan memantau laporan tersebut.</p>
+                    </div>
+
+                    <div class="sub-feature-block mb-3">
+                        <h6 class="sub-feature-title">C. Riwayat Pengaduan</h6>
+                        <p class="sub-feature-desc">Mahasiswa dapat melihat daftar laporan yang pernah dikirimkan. Informasi yang ditampilkan mencakup nomor tiket, judul pengaduan, kategori, tanggal pengajuan, dan status terkini. Fitur pencarian dan penyaringan berdasarkan kategori maupun status dapat membantu mahasiswa menemukan laporan tertentu dengan lebih cepat.</p>
+                    </div>
+
+                    <div class="sub-feature-block mb-3">
+                        <h6 class="sub-feature-title">D. Detail dan Pelacakan Pengaduan</h6>
+                        <p class="sub-feature-desc">Fitur ini menampilkan informasi lengkap mengenai pengaduan yang dipilih, termasuk deskripsi masalah, lampiran, tanggapan petugas, dan riwayat perubahan status. Dengan demikian, mahasiswa dapat mengetahui perkembangan laporan tanpa harus selalu menanyakan statusnya secara langsung.</p>
+                    </div>
+
+                    <div class="sub-feature-block mb-3">
+                        <h6 class="sub-feature-title">E. Notifikasi</h6>
+                        <p class="sub-feature-desc">Sistem menyediakan pemberitahuan mengenai peristiwa penting, seperti keberhasilan pengiriman laporan, perubahan status pengaduan, dan tanggapan baru dari petugas. Notifikasi dapat dikembangkan secara bertahap sesuai kebutuhan dan kemampuan infrastruktur sistem.</p>
+                    </div>
+
+                    <div class="sub-feature-block mb-3">
+                        <h6 class="sub-feature-title">F. Profil dan Pengaturan Akun</h6>
+                        <p class="sub-feature-desc">Mahasiswa dapat melihat informasi profil seperti nama, NIM, program studi, dan semester. Sistem juga dapat menyediakan pengaturan untuk mengubah informasi tertentu, mengganti kata sandi, dan keluar dari akun.</p>
+                    </div>
+
+                    <div class="sub-feature-block mb-3">
+                        <h6 class="sub-feature-title">G. Dashboard Admin</h6>
+                        <p class="sub-feature-desc">Dashboard admin menyajikan ringkasan jumlah pengaduan, laporan yang menunggu penanganan, laporan yang sedang diproses, laporan yang telah selesai, serta statistik berdasarkan kategori atau periode. Informasi tersebut membantu petugas memahami kondisi pengaduan dan menentukan prioritas penanganan.</p>
+                    </div>
+
+                    <div class="sub-feature-block mb-3">
+                        <h6 class="sub-feature-title">H. Manajemen Pengaduan</h6>
+                        <p class="sub-feature-desc">Admin dapat memeriksa laporan yang masuk, melihat informasi dan lampiran pendukung, memberikan tanggapan, memperbarui status, serta mencatat perkembangan penanganan. Setiap perubahan penting dapat disimpan dalam riwayat aktivitas agar proses penanganan lebih mudah ditelusuri.</p>
+                    </div>
+
+                    <div class="sub-feature-block mb-0">
+                        <h6 class="sub-feature-title">I. Pengelolaan Kategori dan Rekapitulasi</h6>
+                        <p class="sub-feature-desc">Sistem menyediakan pengelolaan kategori pengaduan, seperti akademik, dosen dan pengajaran, fasilitas dan laboratorium, administrasi, serta saran dan kritik. Selain itu, admin dapat melihat rekapitulasi laporan berdasarkan status, kategori, dan rentang waktu untuk mendukung evaluasi layanan program studi.</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 6: Kategori Pengaduan -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-danger-subtle text-danger fw-bold" style="font-size:0.75rem;">6</span>
+                    <h3 class="doc-heading m-0">Kategori Pengaduan</h3>
+                </div>
+                <div class="doc-text">
+                    <p>Si ASPIRA dapat menyediakan kategori laporan sebagai berikut:</p>
+                    <ol class="doc-list-styled">
+                        <li><strong>Akademik:</strong> permasalahan jadwal perkuliahan, KRS, nilai, dan kegiatan akademik.</li>
+                        <li><strong>Dosen dan Pengajaran:</strong> kendala yang berkaitan dengan pelaksanaan pembelajaran dan komunikasi akademik.</li>
+                        <li><strong>Fasilitas dan Laboratorium:</strong> permasalahan komputer, perangkat praktikum, ruang kelas, dan jaringan internet.</li>
+                        <li><strong>Administrasi:</strong> kendala layanan administrasi dan dokumen akademik.</li>
+                        <li><strong>Saran dan Kritik:</strong> masukan untuk meningkatkan kualitas layanan dan kegiatan program studi.</li>
+                        <li><strong>Lainnya:</strong> laporan yang relevan tetapi belum termasuk kategori yang tersedia.</li>
+                    </ol>
+                    <p class="small text-muted mb-0">
+                        * Kategori tersebut dapat disesuaikan dengan kebijakan dan kebutuhan Program Studi Teknik Informatika.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 7: Status Penanganan Pengaduan -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-warning-subtle text-warning fw-bold" style="font-size:0.75rem;">7</span>
+                    <h3 class="doc-heading m-0">Status Penanganan Pengaduan</h3>
+                </div>
+                <div class="doc-text">
+                    <p>Untuk memberikan informasi perkembangan laporan, sistem menggunakan beberapa status penanganan:</p>
+                    <ul class="doc-list-styled">
+                        <li><strong>Menunggu:</strong> laporan telah diterima sistem dan menunggu pemeriksaan petugas.</li>
+                        <li><strong>Diproses:</strong> laporan sedang diperiksa atau ditangani.</li>
+                        <li><strong>Ditindaklanjuti:</strong> telah dilakukan tindakan atau tindak lanjut terhadap laporan.</li>
+                        <li><strong>Selesai:</strong> penanganan laporan telah dinyatakan selesai oleh petugas berwenang.</li>
+                        <li><strong>Ditolak:</strong> laporan tidak dapat diproses dan disertai alasan yang dapat diketahui pelapor sesuai kebijakan sistem.</li>
+                    </ul>
+                    <p class="small text-muted mb-0">
+                        Perubahan status dilakukan oleh petugas yang memiliki kewenangan. Mahasiswa dapat memantau perkembangan laporan, tetapi tidak dapat mengubah status penanganannya sendiri.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 8: Teknologi yang Digunakan -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size:0.75rem;">8</span>
+                    <h3 class="doc-heading m-0">Teknologi yang Digunakan</h3>
+                </div>
+                <div class="doc-text">
+                    <p>Si ASPIRA dirancang menggunakan teknologi pengembangan web yang relatif mudah dipelajari, dikembangkan, dan dipelihara.</p>
+                    
+                    <div class="mb-3">
+                        <strong class="text-white d-block mb-1"><i class="bi bi-window-sidebar text-primary me-1"></i> Frontend:</strong>
+                        <ul class="doc-list-styled mb-2">
+                            <li>HTML5 untuk menyusun struktur halaman.</li>
+                            <li>CSS3 dan Tailwind CSS untuk membangun tampilan responsif dengan tema dark premium.</li>
+                            <li>JavaScript untuk menangani interaksi antarmuka.</li>
+                            <li>Jinja2 untuk merender halaman HTML menggunakan data dari Flask.</li>
+                            <li>Lucide Icons untuk menyediakan ikon antarmuka yang konsisten.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong class="text-white d-block mb-1"><i class="bi bi-cpu text-success me-1"></i> Backend:</strong>
+                        <ul class="doc-list-styled mb-2">
+                            <li>Python sebagai bahasa pemrograman utama.</li>
+                            <li>Flask sebagai framework untuk menangani permintaan pengguna, autentikasi, pemrosesan pengaduan, dan komunikasi dengan database.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong class="text-white d-block mb-1"><i class="bi bi-database text-warning me-1"></i> Database:</strong>
+                        <ul class="doc-list-styled mb-2">
+                            <li>MySQL untuk menyimpan data pengguna, pengaduan, kategori, lampiran, tanggapan, notifikasi, dan riwayat perubahan status.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <strong class="text-white d-block mb-1"><i class="bi bi-tools text-purple me-1" style="color:var(--accent-purple);"></i> Lingkungan pengembangan:</strong>
+                        <ul class="doc-list-styled mb-0">
+                            <li>Visual Studio Code sebagai editor kode.</li>
+                            <li>XAMPP untuk membantu menjalankan MySQL dan phpMyAdmin pada lingkungan lokal.</li>
+                            <li>Git dan GitHub untuk pengelolaan versi kode sumber.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 9: Keamanan dan Privasi -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-success-subtle text-success fw-bold" style="font-size:0.75rem;">9</span>
+                    <h3 class="doc-heading m-0">Keamanan dan Privasi</h3>
+                </div>
+                <div class="doc-text">
+                    <p>
+                        Karena sistem menyimpan identitas mahasiswa serta informasi pengaduan, aspek keamanan menjadi bagian penting dalam pengembangannya.
+                    </p>
+                    <p>
+                        Perlindungan yang direncanakan meliputi penyimpanan kata sandi dalam bentuk hash, autentikasi pengguna, pembatasan hak akses berdasarkan peran, validasi data di sisi server, perlindungan terhadap serangan umum pada aplikasi web, serta pemeriksaan jenis dan ukuran file yang diunggah.
+                    </p>
+                    <p>
+                        Mahasiswa hanya boleh mengakses laporan yang menjadi haknya, sedangkan petugas hanya dapat mengakses informasi sesuai kewenangannya. Lampiran dan informasi sensitif juga harus dilindungi dari akses yang tidak sah.
+                    </p>
+                    <p class="mb-0">
+                        Apabila fitur pengaduan anonim disediakan, mekanisme tersebut perlu dirancang secara khusus dan dijelaskan secara transparan kepada pengguna agar perlindungan identitas tidak dijanjikan melebihi kemampuan sistem.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 10: Alur Kerja Sistem -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-purple-subtle text-purple fw-bold" style="font-size:0.75rem; color:var(--accent-purple);">10</span>
+                    <h3 class="doc-heading m-0">Alur Kerja Sistem</h3>
+                </div>
+                <div class="doc-text">
+                    <p>Alur pengaduan pada Si ASPIRA dirancang sebagai berikut:</p>
+                    <ol class="doc-list-styled">
+                        <li>Mahasiswa masuk menggunakan akun yang terdaftar.</li>
+                        <li>Mahasiswa membuka dashboard dan memilih menu pembuatan pengaduan.</li>
+                        <li>Mahasiswa mengisi formulir serta melampirkan bukti jika diperlukan.</li>
+                        <li>Sistem memvalidasi data dan menyimpan laporan ke database.</li>
+                        <li>Sistem menghasilkan nomor tiket pengaduan.</li>
+                        <li>Admin atau petugas memeriksa laporan yang masuk.</li>
+                        <li>Petugas memproses laporan, memberikan tanggapan, dan memperbarui status sesuai perkembangan penanganan.</li>
+                        <li>Mahasiswa memantau status dan membaca tanggapan melalui dashboard.</li>
+                        <li>Setelah penanganan dinyatakan selesai, petugas memperbarui status akhir laporan.</li>
+                        <li>Data pengaduan tetap tersimpan sebagai dokumentasi dan dapat digunakan dalam rekapitulasi evaluasi.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 11: Konsep Desain Antarmuka -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary-subtle text-primary fw-bold" style="font-size:0.75rem;">11</span>
+                    <h3 class="doc-heading m-0">Konsep Desain Antarmuka</h3>
+                </div>
+                <div class="doc-text">
+                    <p>
+                        Si ASPIRA menggunakan pendekatan desain dark premium yang mengutamakan profesionalisme, keterbacaan, konsistensi, dan kemudahan navigasi.
+                    </p>
+                    <p>
+                        Palet warna utama berupa biru tua atau navy sebagai latar, dipadukan dengan aksen biru dan ungu untuk menonjolkan elemen interaktif. Kartu statistik, sidebar, tabel laporan, formulir, badge status, dan notifikasi dirancang dengan gaya visual yang konsisten.
+                    </p>
+                    <p class="mb-0">
+                        Dashboard menampilkan sapaan personal kepada mahasiswa, ringkasan informasi penting, dan tombol tindakan utama. Tampilan juga dirancang responsif agar dapat digunakan melalui laptop maupun perangkat seluler. Desain visual tidak hanya bertujuan memperindah website, tetapi juga membantu mahasiswa memahami informasi dan menyelesaikan proses pengaduan dengan mudah.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 12: Manfaat Sistem -->
+            <div class="doc-section mb-4">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-success-subtle text-success fw-bold" style="font-size:0.75rem;">12</span>
+                    <h3 class="doc-heading m-0">Manfaat Sistem</h3>
+                </div>
+                <div class="doc-text">
+                    <p>Penerapan Si ASPIRA diharapkan memberikan manfaat bagi mahasiswa dan pengelola program studi.</p>
+                    <ul class="doc-list-styled mb-0">
+                        <li><strong>Bagi mahasiswa:</strong> sistem menyediakan saluran pengaduan yang mudah diakses, dokumentasi laporan yang jelas, serta informasi mengenai perkembangan penanganan.</li>
+                        <li><strong>Bagi admin dan petugas:</strong> sistem membantu memusatkan data pengaduan, mengorganisasi proses penanganan, menyimpan riwayat tanggapan, dan menyusun rekapitulasi laporan.</li>
+                        <li><strong>Bagi program studi:</strong> data yang terkumpul dapat menjadi bahan evaluasi untuk mengidentifikasi kendala yang sering muncul serta menentukan aspek layanan yang perlu ditingkatkan.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="doc-divider">
+
+            <!-- BAGIAN 13: Kesimpulan -->
+            <div class="doc-section mb-0">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-info-subtle text-cyan fw-bold" style="font-size:0.75rem; color:var(--accent-cyan);">13</span>
+                    <h3 class="doc-heading m-0">Kesimpulan</h3>
+                </div>
+                <div class="doc-text">
+                    <p>
+                        Si ASPIRA merupakan rancangan sistem informasi pengaduan berbasis website yang berfokus pada kemudahan penyampaian aspirasi, keteraturan pengelolaan laporan, transparansi perkembangan penanganan, dan keamanan data mahasiswa.
+                    </p>
+                    <p>
+                        Dengan mengintegrasikan antarmuka mahasiswa, panel admin, database terpusat, dan mekanisme pelacakan pengaduan, sistem ini diharapkan dapat mendukung terciptanya komunikasi yang lebih terstruktur antara mahasiswa dan pihak Program Studi Teknik Informatika.
+                    </p>
+
+                    <div class="text-center p-4 rounded-3 mt-4" style="background:rgba(59, 130, 246, 0.08); border:1px solid rgba(59, 130, 246, 0.25);">
+                        <i class="bi bi-quote" style="font-size:2rem; color:var(--accent-blue-light); line-height:1;"></i>
+                        <h4 style="font-size:1.4rem; font-weight:800; color:white; margin:8px 0;">
+                            “Suaramu, Perubahan Kita”
+                        </h4>
+                        <p class="small text-muted m-0" style="max-width:580px; margin:0 auto !important; line-height:1.6;">
+                            Menjadikan setiap aspirasi sebagai bagian dari upaya bersama untuk meningkatkan kualitas layanan dan lingkungan akademik.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+/* Meet the Developers Styles */
+.dev-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+.dev-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(59, 130, 246, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Bingkai Foto Profil Persegi 1:1 */
+.dev-photo-frame {
+    width: 76px;
+    height: 76px;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: rgba(12, 20, 42, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+.dev-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+.dev-card:hover .dev-photo-img {
+    transform: scale(1.06);
+}
+
+.dev-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.dev-desc {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Role Badges */
+.dev-role-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.3px;
+}
+.badge-frontend {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent-blue-light);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.badge-backend {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.badge-fullstack {
+    background: rgba(139, 92, 246, 0.15);
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+.badge-uiux {
+    background: rgba(236, 72, 153, 0.15);
+    color: #f472b6;
+    border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+/* Documentation Single Card Styles */
+.doc-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.doc-text {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+.doc-divider {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 28px 0;
+}
+.doc-list-styled {
+    padding-left: 20px;
+    margin-bottom: 12px;
+}
+.doc-list-styled li {
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+}
+.sub-feature-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 4px;
+}
+.sub-feature-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+    line-height: 1.65;
+}
+</style>
+{% endblock %}

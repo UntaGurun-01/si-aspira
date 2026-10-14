@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block title %}Riwayat Pengaduan - SI Pengaduan{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('dashboard.index') }}" style="color:var(--text-muted);font-size:0.85rem;">Dashboard</a>
+<i class="bi bi-chevron-right mx-2" style="font-size:0.7rem;color:var(--text-muted);"></i>
+<span class="breadcrumb-item-text">Pengaduan Saya</span>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="page-title"><i class="bi bi-list-ul me-3" style="color:var(--accent-blue);"></i>Pengaduan Saya</h1>
+        <p class="page-subtitle">Riwayat seluruh pengaduan yang pernah kamu buat</p>
+    </div>
+    <a href="{{ url_for('complaint.create_complaint') }}" class="btn-primary-custom">
+        <i class="bi bi-plus-circle-fill"></i>
+        Buat Pengaduan Baru
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card-glass mb-4">
+    <form method="GET" action="{{ url_for('complaint.list_complaints') }}" id="filterForm">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label-custom">Cari Pengaduan</label>
+                <div style="position:relative;">
+                    <i class="bi bi-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.875rem;pointer-events:none;"></i>
+                    <input type="text" name="search" class="form-glass" style="padding-left:36px;"
+                        placeholder="Cari judul atau nomor tiket..."
+                        value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label-custom">Kategori</label>
+                <select name="category" class="form-glass filter-auto-submit">
+                    <option value="">Semua Kategori</option>
+                    {% for key, label in categories.items() %}
+                    <option value="{{ key }}" {% if category == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label-custom">Status</label>
+                <select name="status" class="form-glass filter-auto-submit">
+                    <option value="">Semua Status</option>
+                    <option value="menunggu" {% if status == 'menunggu' %}selected{% endif %}>Menunggu</option>
+                    <option value="diproses" {% if status == 'diproses' %}selected{% endif %}>Sedang Diproses</option>
+                    <option value="selesai" {% if status == 'selesai' %}selected{% endif %}>Selesai</option>
+                    <option value="ditolak" {% if status == 'ditolak' %}selected{% endif %}>Ditolak</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn-primary-custom flex-fill justify-content-center" style="padding:10px 12px;">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% if search or category or status %}
+                <a href="{{ url_for('complaint.list_complaints') }}" class="btn-glass justify-content-center" style="padding:10px 12px;">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Results Info -->
+{% if search or category or status %}
+<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">
+    Menampilkan <strong style="color:var(--text-primary);">{{ complaints.total }}</strong> hasil
+    {% if search %}untuk "<strong style="color:var(--text-primary);">{{ search }}</strong>"{% endif %}
+</div>
+{% endif %}
+
+<!-- Complaints List -->
+{% if complaints.items %}
+    {% for complaint in complaints.items %}
+    <div class="complaint-row animate-on-scroll" style="display:flex;align-items:center;cursor:pointer;text-decoration:none;" data-href="{{ url_for('complaint.detail', id=complaint.id) }}" onclick="if(!event.target.closest('.no-row-click')){ window.location.href=this.dataset.href; }">
+        <div class="complaint-icon">
+            <i class="bi {{ complaint.category_icon }}"></i>
+        </div>
+        <div class="complaint-info" style="flex:1;min-width:0;">
+            <a href="{{ url_for('complaint.detail', id=complaint.id) }}" class="complaint-title no-row-click" style="text-decoration:none;display:block;">{{ complaint.title }}</a>
+            <div class="complaint-meta">
+                <span class="complaint-ticket">{{ complaint.ticket_number }}</span>
+                <span class="category-badge">{{ complaint.category_label }}</span>
+                <span><i class="bi bi-calendar3 me-1"></i>{{ complaint.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+                {% if complaint.attachments %}
+                <span><i class="bi bi-paperclip me-1"></i>{{ complaint.attachments|length }} lampiran</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-none d-sm-flex flex-column align-items-end gap-2 flex-shrink-0 me-3">
+            <span class="status-badge status-{{ complaint.status }}">{{ complaint.status_label }}</span>
+            {% if complaint.responses %}
+            <span style="font-size:0.72rem;color:var(--accent-cyan);">
+                <i class="bi bi-chat-dots-fill me-1"></i>Ada tanggapan
+            </span>
+            {% endif %}
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0 no-row-click">
+            <button type="button" class="btn-action-icon" title="Hapus Pengaduan"
+                data-id="{{ complaint.id }}" data-ticket="{{ complaint.ticket_number }}" data-title="{{ complaint.title }}"
+                onclick="event.stopPropagation(); openDeleteModal(this.dataset.id, this.dataset.ticket, this.dataset.title);">
+                <i class="bi bi-trash3"></i>
+            </button>
+            <i class="bi bi-chevron-right" style="color:var(--text-muted);font-size:0.875rem;"></i>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if complaints.pages > 1 %}
+    <div class="pagination-custom">
+        {% if complaints.has_prev %}
+        <a href="{{ url_for('complaint.list_complaints', page=complaints.prev_num, search=search, category=category, status=status) }}"
+           class="page-btn">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        {% else %}
+        <span class="page-btn disabled"><i class="bi bi-chevron-left"></i></span>
+        {% endif %}
+
+        {% for page_num in complaints.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+            {% if page_num %}
+            <a href="{{ url_for('complaint.list_complaints', page=page_num, search=search, category=category, status=status) }}"
+               class="page-btn {% if page_num == complaints.page %}active{% endif %}">
+                {{ page_num }}
+            </a>
+            {% else %}
+            <span class="page-btn" style="cursor:default;">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if complaints.has_next %}
+        <a href="{{ url_for('complaint.list_complaints', page=complaints.next_num, search=search, category=category, status=status) }}"
+           class="page-btn">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+        {% else %}
+        <span class="page-btn disabled"><i class="bi bi-chevron-right"></i></span>
+        {% endif %}
+    </div>
+    <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:12px;">
+        Halaman {{ complaints.page }} dari {{ complaints.pages }} · Total {{ complaints.total }} pengaduan
+    </p>
+    {% endif %}
+
+{% else %}
+<div class="card-glass">
+    <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-inbox-fill"></i></div>
+        {% if search or category or status %}
+        <p class="empty-title">Tidak ada hasil yang cocok</p>
+        <p class="empty-desc">Coba ubah filter pencarian atau hapus filter</p>
+        <a href="{{ url_for('complaint.list_complaints') }}" class="btn-glass">
+            <i class="bi bi-x-circle"></i> Hapus Filter
+        </a>
+        {% else %}
+        <p class="empty-title">Belum ada pengaduan</p>
+        <p class="empty-desc">Kamu belum pernah membuat pengaduan. Mulai sekarang!</p>
+        <a href="{{ url_for('complaint.create_complaint') }}" class="btn-primary-custom">
+            <i class="bi bi-plus-circle"></i> Buat Pengaduan Pertama
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal Konfirmasi Hapus -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-glass" style="border:1px solid rgba(239,68,68,0.3);background:var(--navy-800);">
+            <div class="modal-header" style="border-bottom:1px solid var(--border-color);">
+                <h5 class="modal-title" id="deleteModalLabel" style="font-size:1.1rem;display:flex;align-items:center;gap:10px;color:var(--accent-red);">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Konfirmasi Hapus Pengaduan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="font-size:0.9rem;color:var(--text-secondary);padding:24px;">
+                <p>Apakah Anda yakin ingin menghapus pengaduan ini?</p>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:14px;margin-bottom:16px;">
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">NOMOR TIKET</div>
+                    <code id="modalDeleteTicket" style="font-weight:700;color:var(--accent-blue);font-size:0.95rem;">-</code>
+                    <div style="font-size:0.75rem;color:var(--text-muted);margin-top:10px;margin-bottom:4px;">JUDUL</div>
+                    <div id="modalDeleteTitle" style="font-weight:600;color:var(--text-primary);">-</div>
+                </div>
+                <div class="alert alert-danger" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25);color:#fca5a5;font-size:0.8rem;margin:0;">
+                    <i class="bi bi-info-circle me-1"></i> Data dan lampiran bukti pengaduan ini akan dihapus secara permanen.
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border-color);gap:10px;">
+                <button type="button" class="btn-glass" data-bs-dismiss="modal">Batal</button>
+                <form id="deleteForm" method="POST" action="" style="margin:0;">
+                    <button type="submit" class="btn-danger-custom" id="confirmDeleteBtn">
+                        <i class="bi bi-trash3-fill"></i> Ya, Hapus Pengaduan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let deleteModalInstance = null;
+function openDeleteModal(id, ticket, title) {
+    document.getElementById('modalDeleteTicket').textContent = ticket;
+    document.getElementById('modalDeleteTitle').textContent = title;
+    document.getElementById('deleteForm').action = '/complaints/' + id + '/delete';
+    
+    const modalEl = document.getElementById('deleteModal');
+    if (!deleteModalInstance) {
+        deleteModalInstance = new bootstrap.Modal(modalEl);
+    }
+    deleteModalInstance.show();
+}
+</script>
+{% endblock %}
