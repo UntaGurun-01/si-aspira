@@ -13,8 +13,8 @@ login_manager = LoginManager()
 def create_app():
     app = Flask(
         __name__,
-        template_folder=os.path.join(os.path.dirname(__file__), '..', 'frontend', 'templates'),
-        static_folder=os.path.join(os.path.dirname(__file__), '..', 'frontend', 'static'),
+        template_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'templates')),
+        static_folder=os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'static')),
     )
 
     # Config
