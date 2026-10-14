@@ -1,36 +1,25 @@
 import os
 import sys
 
-# Add project root to sys.path
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
 from backend import create_app
-from flask import redirect, url_for
+from flask import request, render_template
 
 flask_app = create_app()
 
 @flask_app.route('/api/index')
-def vercel_entry_fallback():
-    return redirect(url_for('auth.login'))
+def vercel_entry():
+    # If Vercel rewrote request to /api/index, check original URI header
+    # or render login directly instead of redirecting!
+    original_uri = request.headers.get('x-forwarded-uri') or request.environ.get('REQUEST_URI') or ''
+    if original_uri.startswith('/dashboard') or original_uri.startswith('/complaints') or original_uri.startswith('/profile'):
+        # Pass to the proper view
+        return flask_app.handle_url_adapter(request.environ)
+    # Default to login page directly without redirecting!
+    return render_template('auth/login.html')
 
-class VercelPathMiddleware:
-    def __init__(self, wsgi_app):
-        self.wsgi_app = wsgi_app
-
-    def __call__(self, environ, start_response):
-        # Restore real request path if rewritten by Vercel
-        raw_path = (
-            environ.get('HTTP_X_FORWARDED_URI') or 
-            environ.get('HTTP_X_MATCHED_PATH') or 
-            environ.get('HTTP_X_NOW_ROUTE_MATCHES')
-        )
-        if raw_path and environ.get('PATH_INFO') in ('/api/index', '/api/index.py'):
-            clean_path = raw_path.split('?')[0]
-            if clean_path:
-                environ['PATH_INFO'] = clean_path
-        return self.wsgi_app(environ, start_response)
-
-app = VercelPathMiddleware(flask_app)
-handler = app
+app = flask_app
+handler = flask_app
