@@ -24,9 +24,12 @@ def create_app():
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     # Database Config (PostgreSQL Supabase / MySQL / SQLite)
-    default_sqlite = 'sqlite:///' + os.path.join(
-        os.path.dirname(__file__), '..', 'database.db'
-    )
+    if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME'):
+        default_sqlite = 'sqlite:////tmp/database.db'
+    else:
+        default_sqlite = 'sqlite:///' + os.path.join(
+            os.path.dirname(__file__), '..', 'database.db'
+        )
     db_url = os.environ.get('DATABASE_URL', default_sqlite)
     if db_url and db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://', 'postgresql://', 1)
@@ -63,10 +66,13 @@ def create_app():
     app.register_blueprint(category_bp)
     app.register_blueprint(settings_bp)
 
-    # Create tables
-    with app.app_context():
-        db.create_all()
-        from .models import seed_default_data
-        seed_default_data()
+    # Create tables safely (skip/catch so serverless cold start never crashes)
+    try:
+        with app.app_context():
+            db.create_all()
+            from .models import seed_default_data
+            seed_default_data()
+    except Exception as e:
+        print(f"Database initialization deferred/skipped: {e}")
 
     return app
